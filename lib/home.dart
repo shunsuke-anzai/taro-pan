@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'battle_screen.dart';
 
 void main() {
   runApp(const MaterialApp(home: HomeScreen()));
@@ -23,7 +24,7 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CharaList()),
+                    MaterialPageRoute(builder: (context) => BattleScreen()),
                   );
                 },
                 child: const Text("スタート"),

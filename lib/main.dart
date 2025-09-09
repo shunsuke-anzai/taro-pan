@@ -1,6 +1,5 @@
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'game/pan_battle_game.dart';
+import 'home.dart';
 
 void main() {
   runApp(const PanBattleApp());
@@ -17,9 +16,7 @@ class PanBattleApp extends StatelessWidget {
         primarySwatch: Colors.brown,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: GameWidget<PanBattleGame>.controlled(
-        gameFactory: PanBattleGame.new,
-      ),
+      home: const HomeScreen(),
     );
   }
 }
