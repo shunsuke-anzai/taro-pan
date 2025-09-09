@@ -11,6 +11,9 @@ import '../data/enemy_data.dart';
 class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
   late double gameWidth;
   late double gameHeight;
+  final VoidCallback? onGameEnd;
+  
+  PanBattleGame({this.onGameEnd});
   
   // ゲーム状態
   int yeastPower = 0;
@@ -22,6 +25,10 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
   int maxPlayerCastleHp = 1000;
   int enemyCastleHp = 1000;
   int maxEnemyCastleHp = 1000;
+  
+  // ゲーム終了状態
+  bool isGameOver = false;
+  bool isPlayerWin = false;
   
   // タイマー
   double yeastTimerCounter = 0;
@@ -145,6 +152,9 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
   void update(double dt) {
     super.update(dt);
     
+    // ゲームオーバー時は処理を停止
+    if (isGameOver) return;
+    
     // イーストパワー回復
     yeastTimerCounter += dt;
     if (yeastTimerCounter >= 1.0) {
@@ -175,6 +185,71 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
     // HPバーを更新
     playerCastle.updateHpBar(playerCastleHp, maxPlayerCastleHp);
     enemyCastle.updateHpBar(enemyCastleHp, maxEnemyCastleHp);
+    
+    // 勝敗判定
+    _checkGameOver();
+  }
+  
+  void _checkGameOver() {
+    if (isGameOver) return;
+    
+    if (enemyCastleHp <= 0) {
+      // プレイヤー勝利
+      isGameOver = true;
+      isPlayerWin = true;
+      _showGameOverScreen();
+    } else if (playerCastleHp <= 0) {
+      // プレイヤー敗北
+      isGameOver = true;
+      isPlayerWin = false;
+      _showGameOverScreen();
+    }
+  }
+  
+  void _showGameOverScreen() {
+    // 薄いグレーのオーバーレイ
+    final overlay = RectangleComponent(
+      size: size,
+      paint: Paint()..color = Colors.black.withOpacity(0.7),
+    );
+    add(overlay);
+    
+    // 勝利/敗北メッセージ
+    final messageText = TextComponent(
+      text: isPlayerWin ? '勝利！' : '敗北...',
+      position: Vector2(size.x / 2, size.y / 2 - 50),
+      anchor: Anchor.center,
+      textRenderer: TextPaint(
+        style: TextStyle(
+          color: isPlayerWin ? Colors.yellow : Colors.red,
+          fontSize: 48,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    add(messageText);
+    
+    // ホームへ戻るボタン
+    final homeButton = RectangleComponent(
+      size: Vector2(200, 60),
+      position: Vector2(size.x / 2 - 100, size.y / 2 + 20),
+      paint: Paint()..color = Colors.brown,
+    );
+    add(homeButton);
+    
+    final homeButtonText = TextComponent(
+      text: 'ホームへ戻る',
+      position: Vector2(size.x / 2, size.y / 2 + 50),
+      anchor: Anchor.center,
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    add(homeButtonText);
   }
   
   void _deployCharacter(Character character) {
@@ -198,6 +273,25 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
       position: Vector2(gameWidth - 200, 250), // キャラクターと同じY座標
     );
     add(spawnedEnemy);
+  }
+  
+  @override
+  bool onTapDown(TapDownInfo info) {
+    if (isGameOver) {
+      // ホームボタンの領域をチェック（画面中央のボタン）
+      final buttonArea = Rect.fromCenter(
+        center: Offset(size.x / 2, size.y / 2 + 50),
+        width: 200,
+        height: 60,
+      );
+      
+      if (buttonArea.contains(info.eventPosition.global.toOffset())) {
+        // ホーム画面に戻る
+        onGameEnd?.call();
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -226,15 +320,24 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
         ? Colors.white 
         : Colors.grey.shade300;
     
+    // キャラクター画像
+    final characterSprite = SpriteComponent(
+      sprite: await Sprite.load(character.imagePath),
+      size: Vector2(50, 50),
+      position: Vector2(size.x / 2, 45),
+      anchor: Anchor.center,
+    );
+    add(characterSprite);
+    
     // キャラクター名
     nameText = TextComponent(
       text: character.name,
-      position: Vector2(size.x / 2, 20),
+      position: Vector2(size.x / 2, 15),
       anchor: Anchor.center,
       textRenderer: TextPaint(
         style: TextStyle(
           color: Colors.brown.shade800,
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -244,7 +347,7 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
     // パワーコスト
     costText = TextComponent(
       text: character.powerCost.toString(),
-      position: Vector2(size.x / 2, 80),
+      position: Vector2(size.x / 2, 85),
       anchor: Anchor.center,
       textRenderer: TextPaint(
         style: TextStyle(
@@ -277,7 +380,7 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
 }
 
 // 配置されたキャラクターコンポーネント
-class DeployedCharacterComponent extends RectangleComponent {
+class DeployedCharacterComponent extends SpriteComponent {
   final Character character;
   double speed = 30.0; // 移動速度
   bool isInBattle = false;
@@ -293,22 +396,8 @@ class DeployedCharacterComponent extends RectangleComponent {
   
   @override
   Future<void> onLoad() async {
-    paint = Paint()..color = Colors.orange.shade300;
-    
-    // キャラクター名を表示
-    final nameText = TextComponent(
-      text: character.name,
-      position: Vector2(size.x / 2, size.y - 10),
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 8,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-    add(nameText);
+    // キャラクター画像を設定
+    sprite = await Sprite.load(character.imagePath);
   }
   
   @override
@@ -378,17 +467,13 @@ class DeployedCharacterComponent extends RectangleComponent {
         game.enemyCastleHp -= character.attackPower;
         if (game.enemyCastleHp < 0) game.enemyCastleHp = 0;
         game._updateCastleHpDisplay();
-        
-        if (game.enemyCastleHp <= 0) {
-          print('勝利！敵の城を破壊しました！');
-        }
       }
     }
   }
 }
 
 // スポーンされた敵コンポーネント
-class SpawnedEnemyComponent extends RectangleComponent {
+class SpawnedEnemyComponent extends SpriteComponent {
   final Enemy enemy;
   double speed = 50.0; // 移動速度
   bool isInBattle = false;
@@ -404,22 +489,8 @@ class SpawnedEnemyComponent extends RectangleComponent {
   
   @override
   Future<void> onLoad() async {
-    paint = Paint()..color = Colors.red.shade400;
-    
-    // 敵名を表示
-    final nameText = TextComponent(
-      text: enemy.name,
-      position: Vector2(size.x / 2, size.y - 10),
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 8,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-    add(nameText);
+    // 敵キャラクター画像を設定
+    sprite = await Sprite.load(enemy.imagePath);
   }
   
   @override
@@ -471,10 +542,6 @@ class SpawnedEnemyComponent extends RectangleComponent {
         game.playerCastleHp -= enemy.attackPower;
         if (game.playerCastleHp < 0) game.playerCastleHp = 0;
         game._updateCastleHpDisplay();
-        
-        if (game.playerCastleHp <= 0) {
-          print('敗北！パン窯が破壊されました！');
-        }
       }
     }
   }

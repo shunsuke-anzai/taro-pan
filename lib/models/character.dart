@@ -4,6 +4,7 @@ class Character {
   final int attackPower;
   final int powerCost;
   final String description;
+  final String imagePath;
   int currentHp;
 
   Character({
@@ -12,6 +13,7 @@ class Character {
     required this.attackPower,
     required this.powerCost,
     required this.description,
+    required this.imagePath,
   }) : currentHp = maxHp;
 
   bool get isAlive => currentHp > 0;
@@ -30,6 +32,7 @@ class Character {
     int? attackPower,
     int? powerCost,
     String? description,
+    String? imagePath,
     int? currentHp,
   }) {
     return Character(
@@ -38,6 +41,7 @@ class Character {
       attackPower: attackPower ?? this.attackPower,
       powerCost: powerCost ?? this.powerCost,
       description: description ?? this.description,
+      imagePath: imagePath ?? this.imagePath,
     )..currentHp = currentHp ?? this.currentHp;
   }
 }

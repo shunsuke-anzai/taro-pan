@@ -9,6 +9,7 @@ class GameData {
         attackPower: 20,
         powerCost: 30, // 10 × 3 = 30
         description: '基本的なパン戦士。バランスの取れた能力を持つ。',
+        imagePath: 'pukuran.png',
       ),
       Character(
         name: 'バゲットン',
@@ -16,6 +17,7 @@ class GameData {
         attackPower: 35,
         powerCost: 75, // 25 × 3 = 75
         description: 'サクサクの装甲を持つ騎士。高い攻撃力が自慢。',
+        imagePath: 'buggeton.png',
       ),
       Character(
         name: 'クレッシェン',
@@ -23,6 +25,7 @@ class GameData {
         attackPower: 45,
         powerCost: 90, // 30 × 3 = 90
         description: '甘い魔法を使う魔術師。高火力だが脆い。',
+        imagePath: 'kuresshen.png',
       ),
       Character(
         name: 'あんまる',
@@ -30,6 +33,7 @@ class GameData {
         attackPower: 25,
         powerCost: 45, // 15 × 3 = 45
         description: '長いリーチを持つ槍兵。バランスの良い戦士。',
+        imagePath: 'anmaru.png',
       ),
       Character(
         name: 'ダブルトングマン',
@@ -37,6 +41,7 @@ class GameData {
         attackPower: 30,
         powerCost: 60, // 20 × 3 = 60
         description: '素早い動きで敵を翻弄する忍者。',
+        imagePath: 'doubletongman.png',
       ),
     ];
   }
