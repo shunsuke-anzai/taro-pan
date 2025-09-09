@@ -15,7 +15,13 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
   // ゲーム状態
   int yeastPower = 0;
   int maxYeastPower = 100;
-  int yeastRegenRate = 2;
+  int yeastRegenRate = 10; // 2 × 5 = 10（5倍速）
+  
+  // 城のHP
+  int playerCastleHp = 1000;
+  int maxPlayerCastleHp = 1000;
+  int enemyCastleHp = 1000;
+  int maxEnemyCastleHp = 1000;
   
   // タイマー
   double yeastTimerCounter = 0;
@@ -23,6 +29,8 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
   
   // UI コンポーネント
   late TextComponent yeastPowerText;
+  late TextComponent playerCastleHpText;
+  late TextComponent enemyCastleHpText;
   
   @override
   Future<void> onLoad() async {
@@ -43,24 +51,33 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
     
     // UIを追加
     await _addUI();
+    
+    // 初期HPバーを設定
+    _updateCastleHpDisplay();
   }
+  
+  late CastleComponent playerCastle;
   
   Future<void> _addOven() async {
-    final oven = SpriteComponent(
-      sprite: await Sprite.load('kama.png'),
-      size: Vector2(150, 180),
-      position: Vector2(20, 120),
+    playerCastle = CastleComponent(
+      spritePath: 'kama.png',
+      castleSize: Vector2(180, 220),
+      castlePosition: Vector2(20, 100),
+      isPlayerCastle: true,
     );
-    add(oven);
+    add(playerCastle);
   }
   
+  late CastleComponent enemyCastle;
+  
   Future<void> _addEnemyCastle() async {
-    final castle = SpriteComponent(
-      sprite: await Sprite.load('enemyCastle.png'),
-      size: Vector2(120, 150),
-      position: Vector2(gameWidth - 140, 100),
+    enemyCastle = CastleComponent(
+      spritePath: 'enemyCastle.png',
+      castleSize: Vector2(200, 250),
+      castlePosition: Vector2(gameWidth - 220, 50),
+      isPlayerCastle: false,
     );
-    add(castle);
+    add(enemyCastle);
   }
   
   Future<void> _addUI() async {
@@ -77,6 +94,34 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
       ),
     );
     add(yeastPowerText);
+    
+    // プレイヤー城のHP表示
+    playerCastleHpText = TextComponent(
+      text: 'パン窯HP: $playerCastleHp / $maxPlayerCastleHp',
+      position: Vector2(20, 50),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.blue,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    add(playerCastleHpText);
+    
+    // 敵城のHP表示
+    enemyCastleHpText = TextComponent(
+      text: '敵城HP: $enemyCastleHp / $maxEnemyCastleHp',
+      position: Vector2(gameWidth - 250, 20),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.red,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    add(enemyCastleHpText);
     
     // キャラクター選択ボタンを追加
     await _addCharacterButtons();
@@ -123,15 +168,24 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
     yeastPowerText.text = 'イーストパワー: $yeastPower / $maxYeastPower';
   }
   
+  void _updateCastleHpDisplay() {
+    playerCastleHpText.text = 'パン窯HP: $playerCastleHp / $maxPlayerCastleHp';
+    enemyCastleHpText.text = '敵城HP: $enemyCastleHp / $maxEnemyCastleHp';
+    
+    // HPバーを更新
+    playerCastle.updateHpBar(playerCastleHp, maxPlayerCastleHp);
+    enemyCastle.updateHpBar(enemyCastleHp, maxEnemyCastleHp);
+  }
+  
   void _deployCharacter(Character character) {
     if (yeastPower >= character.powerCost) {
       yeastPower -= character.powerCost;
       _updateYeastPowerDisplay();
       
-      // キャラクターを配置
+      // キャラクターを配置 - 全て同じY座標（横列）
       final deployedChar = DeployedCharacterComponent(
         character: character,
-        position: Vector2(170, 200 + (children.whereType<DeployedCharacterComponent>().length * 70)),
+        position: Vector2(170, 250), // 固定Y座標
       );
       add(deployedChar);
     }
@@ -141,7 +195,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
     final enemy = EnemyData.getRandomEnemy();
     final spawnedEnemy = SpawnedEnemyComponent(
       enemy: enemy,
-      position: Vector2(gameWidth - 200, 200 + (children.whereType<SpawnedEnemyComponent>().length % 3 * 60)),
+      position: Vector2(gameWidth - 200, 250), // キャラクターと同じY座標
     );
     add(spawnedEnemy);
   }
@@ -262,12 +316,13 @@ class DeployedCharacterComponent extends RectangleComponent {
     super.update(dt);
     
     if (!isInBattle) {
-      // 右に移動
-      position.x += speed * dt;
-      
-      // 画面外に出たら削除
-      if (position.x > (parent as PanBattleGame).gameWidth) {
-        removeFromParent();
+      // 右に移動（城の前で止まる）
+      final castleX = (parent as PanBattleGame).gameWidth - 220; // 城の位置
+      if (position.x < castleX - 50) { // 城の50px手前で止まる
+        position.x += speed * dt;
+      } else {
+        // 城に到達したら攻撃開始
+        isInBattle = true;
       }
     }
     
@@ -299,17 +354,33 @@ class DeployedCharacterComponent extends RectangleComponent {
     final enemies = parent!.children.whereType<SpawnedEnemyComponent>()
         .where((e) => e.isInBattle && position.distanceTo(e.position) < 100);
     
-    for (final enemy in enemies) {
-      final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
-      
-      // 1.5秒間隔で攻撃
+    final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
+    
+    if (enemies.isNotEmpty) {
+      // 敵がいる場合は敵を攻撃
+      for (final enemy in enemies) {
+        // 1.5秒間隔で攻撃
+        if (currentTime - lastAttackTime > 1.5) {
+          lastAttackTime = currentTime;
+          enemy.enemy.takeDamage(character.attackPower);
+          
+          if (!enemy.enemy.isAlive) {
+            enemy.die();
+            isInBattle = false;
+          }
+        }
+      }
+    } else {
+      // 敵がいない場合は城を攻撃
       if (currentTime - lastAttackTime > 1.5) {
         lastAttackTime = currentTime;
-        enemy.enemy.takeDamage(character.attackPower);
+        final game = parent as PanBattleGame;
+        game.enemyCastleHp -= character.attackPower;
+        if (game.enemyCastleHp < 0) game.enemyCastleHp = 0;
+        game._updateCastleHpDisplay();
         
-        if (!enemy.enemy.isAlive) {
-          enemy.die();
-          isInBattle = false;
+        if (game.enemyCastleHp <= 0) {
+          print('勝利！敵の城を破壊しました！');
         }
       }
     }
@@ -356,12 +427,13 @@ class SpawnedEnemyComponent extends RectangleComponent {
     super.update(dt);
     
     if (!isInBattle) {
-      // 左に移動
-      position.x -= speed * dt;
-      
-      // 画面外に出たら削除
-      if (position.x < -size.x) {
-        removeFromParent();
+      // 左に移動（パン窯の前で止まる）
+      final ovenX = 20 + 180; // パン窯の右端位置（新しいサイズに合わせて調整）
+      if (position.x > ovenX + 50) { // パン窯の50px右で止まる
+        position.x -= speed * dt;
+      } else {
+        // パン窯に到達したら攻撃開始
+        isInBattle = true;
       }
     }
     
@@ -375,17 +447,33 @@ class SpawnedEnemyComponent extends RectangleComponent {
     final allies = parent!.children.whereType<DeployedCharacterComponent>()
         .where((a) => a.isInBattle && position.distanceTo(a.position) < 100);
     
-    for (final ally in allies) {
-      final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
-      
-      // 2秒間隔で攻撃
+    final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
+    
+    if (allies.isNotEmpty) {
+      // 味方がいる場合は味方を攻撃
+      for (final ally in allies) {
+        // 2秒間隔で攻撃
+        if (currentTime - lastAttackTime > 2.0) {
+          lastAttackTime = currentTime;
+          ally.character.takeDamage(enemy.attackPower);
+          
+          if (!ally.character.isAlive) {
+            ally.removeFromParent();
+            isInBattle = false;
+          }
+        }
+      }
+    } else {
+      // 味方がいない場合はパン窯を攻撃
       if (currentTime - lastAttackTime > 2.0) {
         lastAttackTime = currentTime;
-        ally.character.takeDamage(enemy.attackPower);
+        final game = parent as PanBattleGame;
+        game.playerCastleHp -= enemy.attackPower;
+        if (game.playerCastleHp < 0) game.playerCastleHp = 0;
+        game._updateCastleHpDisplay();
         
-        if (!ally.character.isAlive) {
-          ally.removeFromParent();
-          isInBattle = false;
+        if (game.playerCastleHp <= 0) {
+          print('敗北！パン窯が破壊されました！');
         }
       }
     }
@@ -398,5 +486,74 @@ class SpawnedEnemyComponent extends RectangleComponent {
       LinearEffectController(0.5),
       onComplete: () => removeFromParent(),
     ));
+  }
+}
+
+// 城コンポーネント（HPバー付き）
+class CastleComponent extends Component {
+  final String spritePath;
+  final Vector2 castleSize;
+  final Vector2 castlePosition;
+  final bool isPlayerCastle;
+  late SpriteComponent castle;
+  late RectangleComponent hpBarBackground;
+  late RectangleComponent hpBarForeground;
+  
+  CastleComponent({
+    required this.spritePath,
+    required this.castleSize,
+    required this.castlePosition,
+    required this.isPlayerCastle,
+  });
+  
+  @override
+  Future<void> onLoad() async {
+    // 城のスプライト
+    castle = SpriteComponent(
+      sprite: await Sprite.load(spritePath),
+      size: castleSize,
+      position: castlePosition,
+    );
+    add(castle);
+    
+    // HPバーの背景
+    hpBarBackground = RectangleComponent(
+      size: Vector2(castleSize.x * 0.8, 10),
+      position: Vector2(
+        castlePosition.x + castleSize.x * 0.1,
+        castlePosition.y - 18,
+      ),
+      paint: Paint()..color = Colors.black,
+    );
+    add(hpBarBackground);
+    
+    // HPバーの前景
+    hpBarForeground = RectangleComponent(
+      size: Vector2(castleSize.x * 0.8, 8),
+      position: Vector2(
+        castlePosition.x + castleSize.x * 0.1 + 1,
+        castlePosition.y - 17,
+      ),
+      paint: Paint()..color = Colors.green,
+    );
+    add(hpBarForeground);
+  }
+  
+  void updateHpBar(int currentHp, int maxHp) {
+    final hpRatio = currentHp / maxHp;
+    
+    // HPバーの幅を更新（内側のパディングを考慮）
+    hpBarForeground.size.x = (castleSize.x * 0.8 - 2) * hpRatio;
+    
+    // HPに応じて色を変更
+    Color barColor;
+    if (hpRatio > 0.6) {
+      barColor = Colors.green;
+    } else if (hpRatio > 0.3) {
+      barColor = Colors.orange;
+    } else {
+      barColor = Colors.red;
+    }
+    hpBarForeground.paint.color = barColor;
   }
 }

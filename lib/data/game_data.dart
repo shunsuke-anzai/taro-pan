@@ -4,38 +4,38 @@ class GameData {
   static List<Character> getAllCharacters() {
     return [
       Character(
-        name: '食パン戦士',
+        name: 'ぷくらん',
         maxHp: 100,
         attackPower: 20,
-        powerCost: 10,
+        powerCost: 30, // 10 × 3 = 30
         description: '基本的なパン戦士。バランスの取れた能力を持つ。',
       ),
       Character(
-        name: 'クロワッサン騎士',
+        name: 'バゲットン',
         maxHp: 150,
         attackPower: 35,
-        powerCost: 25,
+        powerCost: 75, // 25 × 3 = 75
         description: 'サクサクの装甲を持つ騎士。高い攻撃力が自慢。',
       ),
       Character(
-        name: 'メロンパン魔術師',
+        name: 'クレッシェン',
         maxHp: 80,
         attackPower: 45,
-        powerCost: 30,
+        powerCost: 90, // 30 × 3 = 90
         description: '甘い魔法を使う魔術師。高火力だが脆い。',
       ),
       Character(
-        name: 'バゲット槍兵',
+        name: 'あんまる',
         maxHp: 120,
         attackPower: 25,
-        powerCost: 15,
+        powerCost: 45, // 15 × 3 = 45
         description: '長いリーチを持つ槍兵。バランスの良い戦士。',
       ),
       Character(
-        name: 'ドーナツ忍者',
+        name: 'ダブルトングマン',
         maxHp: 90,
         attackPower: 30,
-        powerCost: 20,
+        powerCost: 60, // 20 × 3 = 60
         description: '素早い動きで敵を翻弄する忍者。',
       ),
     ];
