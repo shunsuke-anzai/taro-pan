@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flame/game.dart';
 import '../game/pan_battle_game.dart';
 
@@ -15,6 +16,13 @@ class _BattleScreenState extends State<BattleScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // 画面方向を横向きに固定
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    
     game = PanBattleGame(
       onGameEnd: () {
         // ゲーム終了時にホーム画面に戻る
