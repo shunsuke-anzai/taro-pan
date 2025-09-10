@@ -10,7 +10,7 @@ import '../models/enemy.dart';
 import '../data/game_data.dart';
 import '../data/enemy_data.dart';
 
-class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
+class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   late double gameWidth;
   late double gameHeight;
   final VoidCallback? onGameEnd;
@@ -222,7 +222,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
     // 薄いグレーのオーバーレイ
     final overlay = RectangleComponent(
       size: size,
-      paint: Paint()..color = Colors.black.withOpacity(0.7),
+      paint: Paint()..color = Colors.black.withValues(alpha: 0.7),
     );
     add(overlay);
     
@@ -575,8 +575,8 @@ class CastleComponent extends Component {
   final Vector2 castlePosition;
   final bool isPlayerCastle;
   late SpriteComponent castle;
-  late RectangleComponent hpBarBackground;
-  late RectangleComponent hpBarForeground;
+  RectangleComponent? hpBarBackground;
+  RectangleComponent? hpBarForeground;
   
   CastleComponent({
     required this.spritePath,
@@ -604,7 +604,7 @@ class CastleComponent extends Component {
       ),
       paint: Paint()..color = Colors.black,
     );
-    add(hpBarBackground);
+    add(hpBarBackground!);
     
     // HPバーの前景
     hpBarForeground = RectangleComponent(
@@ -615,15 +615,14 @@ class CastleComponent extends Component {
       ),
       paint: Paint()..color = Colors.green,
     );
-    add(hpBarForeground);
+    add(hpBarForeground!);
   }
   
   void updateHpBar(int currentHp, int maxHp) {
     final hpRatio = currentHp / maxHp;
-    
+    if (hpBarForeground == null) return;
     // HPバーの幅を更新（内側のパディングを考慮）
-    hpBarForeground.size.x = (castleSize.x * 0.8 - 2) * hpRatio;
-    
+    hpBarForeground!.size.x = (castleSize.x * 0.8 - 2) * hpRatio;
     // HPに応じて色を変更
     Color barColor;
     if (hpRatio > 0.6) {
@@ -633,6 +632,6 @@ class CastleComponent extends Component {
     } else {
       barColor = Colors.red;
     }
-    hpBarForeground.paint.color = barColor;
+    hpBarForeground!.paint.color = barColor;
   }
 }

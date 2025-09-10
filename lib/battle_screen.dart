@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'game/pan_battle_game.dart';
 
 class BattleScreen extends StatelessWidget {
-  BattleScreen({super.key});
+  const BattleScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
