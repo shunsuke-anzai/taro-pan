@@ -1,3 +1,5 @@
+// pan_battle_game.dart
+
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
@@ -45,10 +47,20 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
     gameHeight = size.y;
     
     // 背景設定
-    add(RectangleComponent(
+    // 元の単色背景のコードをコメントアウトまたは削除
+    // add(RectangleComponent(
+    //   size: size,
+    //   paint: Paint()..color = Colors.lightGreen.shade50,
+    // ));
+
+    // 新しい背景画像を追加するコード
+    final backgroundSprite = await Sprite.load('battle_ground.png');
+    final backgroundComponent = SpriteComponent(
+      sprite: backgroundSprite,
       size: size,
-      paint: Paint()..color = Colors.lightGreen.shade50,
-    ));
+      // 画像が画面いっぱいに広がるようにサイズを設定
+    );
+    add(backgroundComponent);
     
     // パン窯を追加
     await _addOven();

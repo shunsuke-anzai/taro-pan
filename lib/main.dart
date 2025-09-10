@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'home.dart';
+import 'splash.dart';
+// ...existing code...
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // 画面方向を横向きに固定
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  
-  runApp(const PanBattleApp());
+  runApp(const MaterialApp(home: SplashScreen()));
 }
 
 class PanBattleApp extends StatelessWidget {
@@ -22,8 +21,10 @@ class PanBattleApp extends StatelessWidget {
     return MaterialApp(
       title: 'パン屋の戦い',
       theme: ThemeData(
-        primarySwatch: Colors.brown,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.brown,
+        ),
+        // visualDensity: VisualDensity.adaptivePlatformDensity, // 削除
       ),
       home: const HomeScreen(),
     );
