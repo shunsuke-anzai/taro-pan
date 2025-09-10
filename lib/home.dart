@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:taro_pan/main.dart';
 import 'package:rive/rive.dart' as rive;
+import 'battle_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +17,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    
+    // 画面方向を横向きに固定
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    
     WidgetsBinding.instance.addObserver(this);
     _controller = rive.SimpleAnimation('Timeline 1');
   }
@@ -64,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const PanBattleApp()),
+                        MaterialPageRoute(builder: (context) => const BattleScreen()),
                       );
                     },
                     child: const Text("スタート"),
@@ -292,7 +301,7 @@ class _CharaList2State extends State<CharaList2> {
                         flex: 1,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5), // 透明度0.5の黒背景
+                            color: Colors.black.withValues(alpha: 0.5), // 透明度0.5の黒背景
                             borderRadius: const BorderRadius.only(
                               topRight: Radius.circular(20),
                               bottomRight: Radius.circular(20),

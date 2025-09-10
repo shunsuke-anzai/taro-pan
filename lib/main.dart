@@ -1,8 +1,6 @@
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'game/pan_battle_game.dart';
-//import 'package:taro_pan/home.dart';
 import 'package:flutter/services.dart';
+import 'home.dart';
 import 'splash.dart';
 // ...existing code...
 
@@ -28,9 +26,7 @@ class PanBattleApp extends StatelessWidget {
         ),
         // visualDensity: VisualDensity.adaptivePlatformDensity, // 削除
       ),
-      home: GameWidget<PanBattleGame>.controlled(
-        gameFactory: PanBattleGame.new,
-      ),
+      home: const HomeScreen(),
     );
   }
 }

@@ -19,10 +19,12 @@ class _SplashScreenState extends State<SplashScreen> {
         _opacity = 1.0;
       });
       Future.delayed(const Duration(milliseconds: 800), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
       });
     });
   }
