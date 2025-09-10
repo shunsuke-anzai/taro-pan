@@ -8,7 +8,7 @@ import '../models/enemy.dart';
 import '../data/game_data.dart';
 import '../data/enemy_data.dart';
 
-class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
+class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   late double gameWidth;
   late double gameHeight;
   final VoidCallback? onGameEnd;
@@ -210,7 +210,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameRef {
     // 薄いグレーのオーバーレイ
     final overlay = RectangleComponent(
       size: size,
-      paint: Paint()..color = Colors.black.withOpacity(0.7),
+      paint: Paint()..color = Colors.black.withValues(alpha: 0.7),
     );
     add(overlay);
     
