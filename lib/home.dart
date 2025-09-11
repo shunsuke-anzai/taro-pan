@@ -47,9 +47,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
       body: Stack(
         children: [
+          // 背景画像
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/backsky.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           Align(
             alignment: Alignment.center,
             child: SizedBox(
@@ -58,6 +66,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               child: rive.RiveAnimation.asset(
                 'assets/animations/taro-pan.riv',
                 controllers: [_controller],
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          // タイトル画像
+          Positioned(
+            top: 10,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Image.asset(
+                'assets/images/ink.png',
+                width: 600,
+                height: 200,
                 fit: BoxFit.contain,
               ),
             ),
@@ -117,7 +139,7 @@ class CharaList extends StatelessWidget {
     {"name": "クレッシェン", "image": "assets/images/kuresien.png", "index": 2},
     {"name": "あんまる", "image": "assets/images/anmaru.png", "index": 3},
     {"name": "ダブルトングマン", "image": "assets/images/panda.png", "index": 4},
-    {"name": "???", "image": "assets/images/???.png", "index": 5},
+    {"name": "???", "image": "assets/images/hatena.png", "index": 5},
   ];
 
   @override
@@ -233,7 +255,7 @@ class _CharaList2State extends State<CharaList2> {
     "description": "HP: 140\n攻撃力: 35\n消費パワー: 20\n二つのトングを使いこなすパン戦士。"
     },
     {"name": "???", 
-    "image": "assets/images/???.png",
+    "image": "assets/images/hatena.png",
     "description": "coming soon..."
     },
   ];
