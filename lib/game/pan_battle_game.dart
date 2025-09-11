@@ -149,10 +149,18 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   Future<void> _addCharacterButtons() async {
     final characters = GameData.getAllCharacters();
     
+    // ボタンサイズを小さく設定
+    final buttonWidth = 85.0;
+    final buttonSpacing = 95.0;
+    
+    // 中央配置のための開始位置を計算
+    final totalWidth = (characters.length - 1) * buttonSpacing + buttonWidth;
+    final startX = (gameWidth - totalWidth) / 2;
+    
     for (int i = 0; i < characters.length; i++) {
       final button = CharacterButton(
         character: characters[i],
-        position: Vector2(20 + i * 110.0, gameHeight - 120),
+        position: Vector2(startX + i * buttonSpacing, gameHeight - 100),
         onTap: () => _deployCharacter(characters[i]),
         game: this,
       );
@@ -312,7 +320,6 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
   final Character character;
   final VoidCallback onTap;
   final PanBattleGame game;
-  late TextComponent nameText;
   late TextComponent costText;
   
   CharacterButton({
@@ -321,50 +328,35 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
     required this.onTap,
     required this.game,
   }) : super(
-    size: Vector2(100, 100),
+    size: Vector2(85, 80), // サイズを小さく
     position: position,
   );
   
   @override
   Future<void> onLoad() async {
-    // ボタンの背景
+    // 角丸のオレンジ色背景
     paint = Paint()..color = game.yeastPower >= character.powerCost 
-        ? Colors.white 
-        : Colors.grey.shade300;
+        ? Colors.orange 
+        : Colors.grey.shade400;
     
-    // キャラクター画像
+    // キャラクター画像（名前を削除してサイズを大きく）
     final characterSprite = SpriteComponent(
       sprite: await Sprite.load(character.imagePath),
-      size: Vector2(50, 50),
-      position: Vector2(size.x / 2, 45),
+      size: Vector2(55, 55), // サイズを大きく
+      position: Vector2(size.x / 2, 30), // 位置を調整
       anchor: Anchor.center,
     );
     add(characterSprite);
     
-    // キャラクター名
-    nameText = TextComponent(
-      text: character.name,
-      position: Vector2(size.x / 2, 15),
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: TextStyle(
-          color: Colors.brown.shade800,
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-    add(nameText);
-    
     // パワーコスト
     costText = TextComponent(
       text: character.powerCost.toString(),
-      position: Vector2(size.x / 2, 85),
+      position: Vector2(size.x / 2, 65), // 位置を下に調整
       anchor: Anchor.center,
       textRenderer: TextPaint(
         style: TextStyle(
           color: Colors.brown.shade800,
-          fontSize: 12,
+          fontSize: 12, // フォントサイズを少し大きく
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -373,12 +365,31 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
   }
   
   @override
+  void render(Canvas canvas) {
+    // 角丸の背景を描画
+    final rect = Rect.fromLTWH(0, 0, size.x, size.y);
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(8.0));
+    
+    // 背景色を描画
+    final backgroundPaint = Paint()
+      ..color = game.yeastPower >= character.powerCost 
+          ? Colors.orange 
+          : Colors.grey.shade400
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect, backgroundPaint);
+    
+    // 白い枠線を描画
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawRRect(rrect, borderPaint);
+  }
+
+  @override
   void update(double dt) {
     super.update(dt);
-    // ボタンの有効/無効状態を更新
-    paint = Paint()..color = game.yeastPower >= character.powerCost 
-        ? Colors.white 
-        : Colors.grey.shade300;
+    // ボタンの有効/無効状態は render メソッドで処理
   }
   
   @override
