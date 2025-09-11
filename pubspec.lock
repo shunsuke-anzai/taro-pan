@@ -73,6 +73,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.32.0"
+  flame_rive:
+    dependency: "direct main"
+    description:
+      name: flame_rive
+      sha256: "70ffd0e4f62ce92f467f1863911e751daf9aec971c68b1ad4b182bb66bab0771"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.10.19"
   flutter:
     dependency: "direct main"
     description: flutter

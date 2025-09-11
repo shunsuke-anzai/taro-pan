@@ -5,6 +5,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
+import 'package:flame_rive/flame_rive.dart';
 import '../models/character.dart';
 import '../models/enemy.dart';
 import '../data/game_data.dart';
@@ -80,7 +81,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   Future<void> _addOven() async {
     playerCastle = CastleComponent(
       spritePath: 'kama.png',
-      castleSize: Vector2(180, 220),
+      castleSize: Vector2(357, 259), // 正方形にして元画像の比率を保持
       castlePosition: Vector2(20, 100),
       isPlayerCastle: true,
     );
@@ -299,6 +300,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
     add(homeButtonText);
   }
   
+  
   void _deployCharacter(Character character) {
     if (yeastPower >= character.powerCost) {
       yeastPower -= character.powerCost;
@@ -307,7 +309,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
       // キャラクターを配置 - 全て同じY座標（横列）
       final deployedChar = DeployedCharacterComponent(
         character: character,
-        position: Vector2(170, 250), // 固定Y座標
+        position: Vector2(170, 180), // Y座標を少し低く調整
       );
       add(deployedChar);
     }
@@ -317,7 +319,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
     final enemy = EnemyData.getRandomEnemy();
     final spawnedEnemy = SpawnedEnemyComponent(
       enemy: enemy,
-      position: Vector2(gameWidth - 200, 250), // キャラクターと同じY座標
+      position: Vector2(gameWidth - 200, 180), // キャラクターと同じY座標
     );
     add(spawnedEnemy);
   }
@@ -449,11 +451,6 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
     );
   }
 
-  @override
-  void update(double dt) {
-    super.update(dt);
-    // ボタンの有効/無効状態は render メソッドで処理
-  }
   
   @override
   bool onTapDown(TapDownEvent event) {
@@ -466,24 +463,50 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
 }
 
 // 配置されたキャラクターコンポーネント
-class DeployedCharacterComponent extends SpriteComponent {
+class DeployedCharacterComponent extends PositionComponent {
   final Character character;
   double speed = 30.0; // 移動速度
   bool isInBattle = false;
   double lastAttackTime = 0;
+  late RiveComponent walkRiveComponent;
+  late RiveComponent attackRiveComponent;
+  RiveComponent? currentRiveComponent;
+  bool isWalking = false;
+  bool isAttacking = false;
   
   DeployedCharacterComponent({
     required this.character,
     required Vector2 position,
   }) : super(
-    size: Vector2(60, 80),
+    size: Vector2(80, 100),
     position: position,
   );
   
   @override
   Future<void> onLoad() async {
-    // キャラクター画像を設定
-    sprite = await Sprite.load(character.imagePath);
+    // 歩行アニメーションを読み込み
+    final walkRiveFile = await RiveFile.asset(character.walkAnimationPath);
+    final walkArtboard = walkRiveFile.mainArtboard;
+    walkArtboard.addController(SimpleAnimation('Timeline 1'));
+    walkRiveComponent = RiveComponent(
+      artboard: walkArtboard,
+      size: Vector2(80, 100),
+      anchor: Anchor.bottomCenter,
+    );
+    
+    // 攻撃アニメーションを読み込み
+    final attackRiveFile = await RiveFile.asset(character.attackAnimationPath);
+    final attackArtboard = attackRiveFile.mainArtboard;
+    attackArtboard.addController(SimpleAnimation('Timeline 1'));
+    attackRiveComponent = RiveComponent(
+      artboard: attackArtboard,
+      size: Vector2(80, 100),
+      anchor: Anchor.bottomCenter,
+    );
+    
+    // 初期状態では歩行アニメーションを表示
+    currentRiveComponent = walkRiveComponent;
+    add(currentRiveComponent!);
   }
   
   @override
@@ -520,9 +543,19 @@ class DeployedCharacterComponent extends SpriteComponent {
         final castleX = (parent as PanBattleGame).gameWidth - 220; // 城の位置
         if (position.x < castleX - 50) { // 城の50px手前で止まる
           position.x += speed * dt;
-        } else if (!isInBattle) {
-          // 城に到達したら攻撃開始（次フレームから）
-          isInBattle = true;
+          if (!isAttacking) {
+            _startWalkAnimation();
+          }
+        } else {
+          _stopWalkAnimation();
+          if (!isInBattle) {
+            // 城に到達したら攻撃開始（次フレームから）
+            isInBattle = true;
+          }
+        }
+      } else {
+        if (!isAttacking) {
+          _stopWalkAnimation();
         }
       }
     }
@@ -563,6 +596,8 @@ class DeployedCharacterComponent extends SpriteComponent {
       // 敵がいる場合は敵を攻撃
       if (currentTime - lastAttackTime > 1.5) {
         lastAttackTime = currentTime;
+        
+        _startAttackAnimation();
         
         if (character.isAreaAttack) {
           // 範囲攻撃の場合：範囲内のすべての敵を攻撃
@@ -606,6 +641,7 @@ class DeployedCharacterComponent extends SpriteComponent {
         // 城に接近している場合は城を攻撃
         if (currentTime - lastAttackTime > 1.5) {
           lastAttackTime = currentTime;
+          _startAttackAnimation();
           game.enemyCastleHp -= character.attackPower;
           if (game.enemyCastleHp < 0) game.enemyCastleHp = 0;
           game._updateCastleHpDisplay();
@@ -615,6 +651,51 @@ class DeployedCharacterComponent extends SpriteComponent {
         isInBattle = false;
         lastAttackTime = currentTime;
       }
+    }
+  }
+  
+  void _startWalkAnimation() {
+    if (!isWalking && !isAttacking) {
+      isWalking = true;
+      _switchToWalkAnimation();
+    }
+  }
+  
+  void _stopWalkAnimation() {
+    if (isWalking) {
+      isWalking = false;
+    }
+  }
+  
+  void _startAttackAnimation() {
+    if (!isAttacking) {
+      isAttacking = true;
+      _switchToAttackAnimation();
+      
+      // 攻撃アニメーション終了後の処理
+      Future.delayed(Duration(milliseconds: 1000), () {
+        isAttacking = false;
+        // 攻撃終了後は移動中のみ歩行アニメーションに戻す
+        if (isWalking && !isInBattle) {
+          _switchToWalkAnimation();
+        }
+      });
+    }
+  }
+  
+  void _switchToWalkAnimation() {
+    if (currentRiveComponent != walkRiveComponent) {
+      currentRiveComponent?.removeFromParent();
+      currentRiveComponent = walkRiveComponent;
+      add(currentRiveComponent!);
+    }
+  }
+  
+  void _switchToAttackAnimation() {
+    if (currentRiveComponent != attackRiveComponent) {
+      currentRiveComponent?.removeFromParent();
+      currentRiveComponent = attackRiveComponent;
+      add(currentRiveComponent!);
     }
   }
 }
@@ -630,8 +711,9 @@ class SpawnedEnemyComponent extends SpriteComponent {
     required this.enemy,
     required Vector2 position,
   }) : super(
-    size: Vector2(50, 60),
+    size: Vector2(60, 75), // 敵のサイズも少し大きく
     position: position,
+    anchor: Anchor.bottomCenter, // 敵も下基準に
   );
   
   @override
@@ -708,6 +790,9 @@ class SpawnedEnemyComponent extends SpriteComponent {
         final game = parent as PanBattleGame;
         game.playerCastleHp -= enemy.attackPower;
         if (game.playerCastleHp < 0) game.playerCastleHp = 0;
+        if (!game.playerCastle.isPlayingDamageAnimation) {
+          game.playerCastle.playDamageAnimation(); // ダメージアニメーション再生
+        }
         game._updateCastleHpDisplay();
       }
     }
@@ -732,6 +817,9 @@ class CastleComponent extends Component {
   late SpriteComponent castle;
   RectangleComponent? hpBarBackground;
   RectangleComponent? hpBarForeground;
+  RiveComponent? damageAnimation;
+  bool isPlayingDamageAnimation = false;
+  TimerComponent? damageAnimationTimer;
   
   CastleComponent({
     required this.spritePath,
@@ -742,13 +830,29 @@ class CastleComponent extends Component {
   
   @override
   Future<void> onLoad() async {
-    // 城のスプライト
+    // 城のスプライト（元画像の比率を保持）
+    final sprite = await Sprite.load(spritePath);
     castle = SpriteComponent(
-      sprite: await Sprite.load(spritePath),
+      sprite: sprite,
       size: castleSize,
       position: castlePosition,
     );
+    castle.scale = Vector2.all(1.0); // スケールを明示的に設定
     add(castle);
+    
+    // プレイヤーの城の場合のyakigamaアニメーションを準備
+    if (isPlayerCastle) {
+      final yakigamaFile = await RiveFile.asset('assets/animations/yakigama.riv');
+      final yakigamaArtboard = yakigamaFile.mainArtboard;
+      yakigamaArtboard.addController(SimpleAnimation('Timeline 1'));
+      damageAnimation = RiveComponent(
+        artboard: yakigamaArtboard,
+        size: castleSize, // 城と同じサイズで比率保持
+        position: castlePosition,
+        anchor: Anchor.topLeft,
+      );
+      damageAnimation!.scale = Vector2.all(1.0); // スケールを明示的に設定
+    }
     
     // HPバーの背景
     hpBarBackground = RectangleComponent(
@@ -788,5 +892,58 @@ class CastleComponent extends Component {
       barColor = Colors.red;
     }
     hpBarForeground!.paint.color = barColor;
+  }
+  
+  void playDamageAnimation() {
+    if (isPlayerCastle && damageAnimation != null && !isPlayingDamageAnimation) {
+      isPlayingDamageAnimation = true;
+      
+      // 既存のタイマーをキャンセル
+      if (damageAnimationTimer != null) {
+        damageAnimationTimer!.removeFromParent();
+        damageAnimationTimer = null;
+      }
+      
+      // スプライトを非表示にしてアニメーションを表示
+      if (castle.parent != null) {
+        castle.removeFromParent();
+      }
+      if (damageAnimation!.parent == null) {
+        add(damageAnimation!);
+      }
+      
+      // 2秒後にアニメーション終了してスプライトに戻す
+      damageAnimationTimer = TimerComponent(
+        period: 2.0,
+        repeat: false,
+        onTick: () {
+          _endDamageAnimation();
+        },
+      );
+      add(damageAnimationTimer!);
+    }
+  }
+  
+  void _endDamageAnimation() {
+    if (isPlayingDamageAnimation) {
+      // アニメーションを削除
+      if (damageAnimation != null && damageAnimation!.parent != null) {
+        damageAnimation!.removeFromParent();
+      }
+      
+      // 城のスプライトを表示
+      if (castle.parent == null) {
+        add(castle);
+      }
+      
+      // タイマーを削除
+      if (damageAnimationTimer != null) {
+        damageAnimationTimer!.removeFromParent();
+        damageAnimationTimer = null;
+      }
+      
+      // フラグをリセット
+      isPlayingDamageAnimation = false;
+    }
   }
 }

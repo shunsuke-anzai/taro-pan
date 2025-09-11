@@ -5,11 +5,13 @@ class GameData {
     return [
       Character(
         name: 'ぷくらん',
-        maxHp: 100,
-        attackPower: 20,
+        maxHp: 500,
+        attackPower: 100,
         powerCost: 30, // 10 × 3 = 30
         description: '基本的なパン戦士。バランスの取れた能力を持つ。',
         imagePath: 'pukuran.png',
+        walkAnimationPath: 'assets/animations/walk_pukuran.riv',
+        attackAnimationPath: 'assets/animations/attack_pukuran.riv',
       ),
       Character(
         name: 'バゲットン',
@@ -18,6 +20,8 @@ class GameData {
         powerCost: 75, // 25 × 3 = 75
         description: 'サクサクの装甲を持つ騎士。高い攻撃力が自慢。',
         imagePath: 'buggeton.png',
+        walkAnimationPath: 'assets/animations/walk_buggeton.riv',
+        attackAnimationPath: 'assets/animations/attack_buggeton.riv',
       ),
       Character(
         name: 'クレッシェン',
@@ -26,6 +30,8 @@ class GameData {
         powerCost: 90, // 30 × 3 = 90
         description: '甘い魔法を使う魔術師。高火力だが脆い。',
         imagePath: 'kuresshen.png',
+        walkAnimationPath: 'assets/animations/walk_kuresshen.riv',
+        attackAnimationPath: 'assets/animations/attack_kuresshen.riv',
         isAreaAttack: true, // 範囲攻撃
         attackRange: 500.0, // 範囲攻撃の範囲（500px）
       ),
@@ -36,6 +42,8 @@ class GameData {
         powerCost: 45, // 15 × 3 = 45
         description: '長いリーチを持つ槍兵。バランスの良い戦士。',
         imagePath: 'anmaru.png',
+        walkAnimationPath: 'assets/animations/walk_anmaru.riv',
+        attackAnimationPath: 'assets/animations/attack_anmaru.riv',
       ),
       Character(
         name: 'ダブルトングマン',
@@ -44,6 +52,8 @@ class GameData {
         powerCost: 60, // 20 × 3 = 60
         description: '素早い動きで敵を翻弄する忍者。',
         imagePath: 'doubletongman.png',
+        walkAnimationPath: 'assets/animations/walk_doubletongman.riv',
+        attackAnimationPath: 'assets/animations/attack_doubletongman.riv',
       ),
     ];
   }

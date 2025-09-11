@@ -5,6 +5,8 @@ class Character {
   final int powerCost;
   final String description;
   final String imagePath;
+  final String walkAnimationPath; // 横移動アニメーション
+  final String attackAnimationPath; // 攻撃アニメーション
   final bool isAreaAttack; // 範囲攻撃かどうか
   final double attackRange; // 攻撃範囲（範囲攻撃の場合のみ使用）
   int currentHp;
@@ -16,6 +18,8 @@ class Character {
     required this.powerCost,
     required this.description,
     required this.imagePath,
+    required this.walkAnimationPath,
+    required this.attackAnimationPath,
     this.isAreaAttack = false, // デフォルトは単体攻撃
     this.attackRange = 50.0, // デフォルト攻撃範囲
   }) : currentHp = maxHp;
@@ -37,6 +41,8 @@ class Character {
     int? powerCost,
     String? description,
     String? imagePath,
+    String? walkAnimationPath,
+    String? attackAnimationPath,
     bool? isAreaAttack,
     double? attackRange,
     int? currentHp,
@@ -48,6 +54,8 @@ class Character {
       powerCost: powerCost ?? this.powerCost,
       description: description ?? this.description,
       imagePath: imagePath ?? this.imagePath,
+      walkAnimationPath: walkAnimationPath ?? this.walkAnimationPath,
+      attackAnimationPath: attackAnimationPath ?? this.attackAnimationPath,
       isAreaAttack: isAreaAttack ?? this.isAreaAttack,
       attackRange: attackRange ?? this.attackRange,
     )..currentHp = currentHp ?? this.currentHp;
