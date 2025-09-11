@@ -21,7 +21,7 @@ class EnemyData {
       ),
       Enemy(
         name: '全粒粉巨人',
-        maxHp: 300,
+        maxHp: 30,
         attackPower: 50,
         speed: 15.0, // 遅い
         size: EnemySize.big,

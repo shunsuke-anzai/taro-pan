@@ -5,7 +5,7 @@ class GameData {
     return [
       Character(
         name: 'ぷくらん',
-        maxHp: 100,
+        maxHp: 500,
         attackPower: 20,
         powerCost: 30, // 10 × 3 = 30
         description: '基本的なパン戦士。バランスの取れた能力を持つ。',
