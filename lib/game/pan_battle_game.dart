@@ -491,37 +491,65 @@ class DeployedCharacterComponent extends SpriteComponent {
     super.update(dt);
     
     if (!isInBattle) {
-      // 右に移動（城の前で止まる）
-      final castleX = (parent as PanBattleGame).gameWidth - 220; // 城の位置
-      if (position.x < castleX - 50) { // 城の50px手前で止まる
-        position.x += speed * dt;
-      } else {
-        // 城に到達したら攻撃開始
-        isInBattle = true;
+      bool shouldMove = true;
+      
+      if (character.name == 'クレッシェン') {
+        // クレッシェンの場合：最も近い敵から300px離れた場所で停止
+        final enemies = parent!.children.whereType<SpawnedEnemyComponent>();
+        if (enemies.isNotEmpty) {
+          double closestDistance = double.infinity;
+          for (final enemy in enemies) {
+            final distance = position.distanceTo(enemy.position);
+            if (distance < closestDistance) {
+              closestDistance = distance;
+            }
+          }
+          
+          // 最も近い敵から300px以内の場合は移動を停止
+          if (closestDistance <= 300) {
+            shouldMove = false;
+            if (!isInBattle) {
+              isInBattle = true; // 攻撃開始
+            }
+          }
+        }
+      }
+      
+      if (shouldMove) {
+        // 右に移動（城の前で止まる）
+        final castleX = (parent as PanBattleGame).gameWidth - 220; // 城の位置
+        if (position.x < castleX - 50) { // 城の50px手前で止まる
+          position.x += speed * dt;
+        } else if (!isInBattle) {
+          // 城に到達したら攻撃開始（次フレームから）
+          isInBattle = true;
+        }
       }
     }
     
     // 敵との衝突判定
     _checkCollisions();
+    
+    // 戦闘処理
+    if (isInBattle) {
+      _processBattle();
+    }
   }
   
   void _checkCollisions() {
     final enemies = parent!.children.whereType<SpawnedEnemyComponent>();
     for (final enemy in enemies) {
-      if (!enemy.isInBattle && !isInBattle) {
+      // 味方が戦闘中でない場合のみ新しい戦闘を開始
+      if (!isInBattle) {
         final distance = position.distanceTo(enemy.position);
         if (distance < 50) {
           // 戦闘開始
           isInBattle = true;
+          // 敵が城を攻撃中でも、味方との戦闘を優先させる
           enemy.isInBattle = true;
           break;
         }
       }
-    }
-    
-    // 戦闘処理
-    if (isInBattle) {
-      _processBattle();
     }
   }
   
@@ -533,26 +561,59 @@ class DeployedCharacterComponent extends SpriteComponent {
     
     if (enemies.isNotEmpty) {
       // 敵がいる場合は敵を攻撃
-      for (final enemy in enemies) {
-        // 1.5秒間隔で攻撃
-        if (currentTime - lastAttackTime > 1.5) {
-          lastAttackTime = currentTime;
-          enemy.enemy.takeDamage(character.attackPower);
+      if (currentTime - lastAttackTime > 1.5) {
+        lastAttackTime = currentTime;
+        
+        if (character.isAreaAttack) {
+          // 範囲攻撃の場合：範囲内のすべての敵を攻撃
+          final allEnemies = parent!.children.whereType<SpawnedEnemyComponent>()
+              .where((e) => position.distanceTo(e.position) < character.attackRange);
           
-          if (!enemy.enemy.isAlive) {
-            enemy.die();
+          bool anyEnemyDied = false;
+          for (final enemy in allEnemies) {
+            enemy.enemy.takeDamage(character.attackPower);
+            if (!enemy.enemy.isAlive) {
+              enemy.die();
+              anyEnemyDied = true;
+            }
+          }
+          
+          if (anyEnemyDied) {
             isInBattle = false;
+            lastAttackTime = currentTime;
+            return;
+          }
+        } else {
+          // 単体攻撃の場合：従来通り
+          for (final enemy in enemies) {
+            enemy.enemy.takeDamage(character.attackPower);
+            
+            if (!enemy.enemy.isAlive) {
+              enemy.die();
+              isInBattle = false;
+              lastAttackTime = currentTime;
+              return;
+            }
           }
         }
       }
     } else {
-      // 敵がいない場合は城を攻撃
-      if (currentTime - lastAttackTime > 1.5) {
+      // 敵がいない場合
+      final game = parent as PanBattleGame;
+      final castleX = game.gameWidth - 220; // 城の位置
+      
+      if (position.x >= castleX - 50) {
+        // 城に接近している場合は城を攻撃
+        if (currentTime - lastAttackTime > 1.5) {
+          lastAttackTime = currentTime;
+          game.enemyCastleHp -= character.attackPower;
+          if (game.enemyCastleHp < 0) game.enemyCastleHp = 0;
+          game._updateCastleHpDisplay();
+        }
+      } else {
+        // 城から離れている場合は戦闘状態をリセット（他の味方が敵を倒した可能性）
+        isInBattle = false;
         lastAttackTime = currentTime;
-        final game = parent as PanBattleGame;
-        game.enemyCastleHp -= character.attackPower;
-        if (game.enemyCastleHp < 0) game.enemyCastleHp = 0;
-        game._updateCastleHpDisplay();
       }
     }
   }
@@ -594,9 +655,29 @@ class SpawnedEnemyComponent extends SpriteComponent {
       }
     }
     
+    // 味方との衝突判定
+    _checkCollisions();
+    
     // 戦闘処理
     if (isInBattle) {
       _processBattle();
+    }
+  }
+  
+  void _checkCollisions() {
+    final allies = parent!.children.whereType<DeployedCharacterComponent>();
+    for (final ally in allies) {
+      // 敵が戦闘中でない場合のみ新しい戦闘を開始
+      if (!isInBattle) {
+        final distance = position.distanceTo(ally.position);
+        if (distance < 50) {
+          // 戦闘開始
+          isInBattle = true;
+          // 味方が城を攻撃中でも、敵との戦闘を優先させる
+          ally.isInBattle = true;
+          break;
+        }
+      }
     }
   }
   

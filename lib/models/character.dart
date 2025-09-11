@@ -5,6 +5,8 @@ class Character {
   final int powerCost;
   final String description;
   final String imagePath;
+  final bool isAreaAttack; // 範囲攻撃かどうか
+  final double attackRange; // 攻撃範囲（範囲攻撃の場合のみ使用）
   int currentHp;
 
   Character({
@@ -14,6 +16,8 @@ class Character {
     required this.powerCost,
     required this.description,
     required this.imagePath,
+    this.isAreaAttack = false, // デフォルトは単体攻撃
+    this.attackRange = 50.0, // デフォルト攻撃範囲
   }) : currentHp = maxHp;
 
   bool get isAlive => currentHp > 0;
@@ -33,6 +37,8 @@ class Character {
     int? powerCost,
     String? description,
     String? imagePath,
+    bool? isAreaAttack,
+    double? attackRange,
     int? currentHp,
   }) {
     return Character(
@@ -42,6 +48,8 @@ class Character {
       powerCost: powerCost ?? this.powerCost,
       description: description ?? this.description,
       imagePath: imagePath ?? this.imagePath,
+      isAreaAttack: isAreaAttack ?? this.isAreaAttack,
+      attackRange: attackRange ?? this.attackRange,
     )..currentHp = currentHp ?? this.currentHp;
   }
 }

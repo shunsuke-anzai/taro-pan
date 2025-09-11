@@ -26,6 +26,8 @@ class GameData {
         powerCost: 90, // 30 × 3 = 90
         description: '甘い魔法を使う魔術師。高火力だが脆い。',
         imagePath: 'kuresshen.png',
+        isAreaAttack: true, // 範囲攻撃
+        attackRange: 500.0, // 範囲攻撃の範囲（500px）
       ),
       Character(
         name: 'あんまる',
