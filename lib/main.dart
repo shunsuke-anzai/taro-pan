@@ -10,7 +10,10 @@ void main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  runApp(const MaterialApp(home: SplashScreen()));
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: SplashScreen(),
+  ));
 }
 
 class PanBattleApp extends StatelessWidget {
@@ -20,6 +23,7 @@ class PanBattleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'パン屋の戦い',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(
           primarySwatch: Colors.brown,
