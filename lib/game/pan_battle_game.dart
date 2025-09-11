@@ -100,47 +100,77 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   }
   
   Future<void> _addUI() async {
-    // イーストパワー表示
+    // イーストパワーの現在値（分子）を大きく表示
     yeastPowerText = TextComponent(
-      text: 'イーストパワー: $yeastPower / $maxYeastPower',
-      position: Vector2(20, 20),
+      text: '$yeastPower',
+      position: Vector2(20, gameHeight - 100),
       textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.brown,
-          fontSize: 18,
+        style: TextStyle(
+          color: Colors.yellow,
+          fontSize: 80, // ボタンの縦幅と同じサイズ
           fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(
+              color: Colors.white,
+              offset: Offset(-2, -2),
+              blurRadius: 0,
+            ),
+            Shadow(
+              color: Colors.white,
+              offset: Offset(2, -2),
+              blurRadius: 0,
+            ),
+            Shadow(
+              color: Colors.white,
+              offset: Offset(-2, 2),
+              blurRadius: 0,
+            ),
+            Shadow(
+              color: Colors.white,
+              offset: Offset(2, 2),
+              blurRadius: 0,
+            ),
+          ],
         ),
       ),
     );
     add(yeastPowerText);
     
-    // プレイヤー城のHP表示
-    playerCastleHpText = TextComponent(
-      text: 'パン窯HP: $playerCastleHp / $maxPlayerCastleHp',
-      position: Vector2(20, 50),
+    // イーストパワーの最大値（分母）を小さく表示
+    final maxYeastText = TextComponent(
+      text: '/ $maxYeastPower',
+      position: Vector2(100, gameHeight - 40),
       textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.blue,
-          fontSize: 16,
+        style: TextStyle(
+          color: Colors.yellow,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(
+              color: Colors.white,
+              offset: Offset(-1, -1),
+              blurRadius: 0,
+            ),
+            Shadow(
+              color: Colors.white,
+              offset: Offset(1, -1),
+              blurRadius: 0,
+            ),
+            Shadow(
+              color: Colors.white,
+              offset: Offset(-1, 1),
+              blurRadius: 0,
+            ),
+            Shadow(
+              color: Colors.white,
+              offset: Offset(1, 1),
+              blurRadius: 0,
+            ),
+          ],
         ),
       ),
     );
-    add(playerCastleHpText);
-    
-    // 敵城のHP表示
-    enemyCastleHpText = TextComponent(
-      text: '敵城HP: $enemyCastleHp / $maxEnemyCastleHp',
-      position: Vector2(gameWidth - 250, 20),
-      textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.red,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-    add(enemyCastleHpText);
+    add(maxYeastText);
     
     // キャラクター選択ボタンを追加
     await _addCharacterButtons();
@@ -149,13 +179,13 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   Future<void> _addCharacterButtons() async {
     final characters = GameData.getAllCharacters();
     
-    // ボタンサイズを小さく設定
-    final buttonWidth = 85.0;
-    final buttonSpacing = 95.0;
+    // ボタンサイズをさらに1.2倍に設定
+    final buttonWidth = 122.4;  // 102 * 1.2
+    final buttonSpacing = 136.8;  // 114 * 1.2
     
-    // 中央配置のための開始位置を計算
+    // 右詰め配置のための開始位置を計算
     final totalWidth = (characters.length - 1) * buttonSpacing + buttonWidth;
-    final startX = (gameWidth - totalWidth) / 2;
+    final startX = gameWidth - totalWidth - 20; // 20pxのマージン
     
     for (int i = 0; i < characters.length; i++) {
       final button = CharacterButton(
@@ -175,12 +205,12 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
     // ゲームオーバー時は処理を停止
     if (isGameOver) return;
     
-    // イーストパワー回復
+    // イーストパワー回復（1刻みずつ滑らかに）
     yeastTimerCounter += dt;
-    if (yeastTimerCounter >= 1.0) {
+    if (yeastTimerCounter >= 0.1) { // 0.1秒ごとに1ずつ増加
       yeastTimerCounter = 0;
       if (yeastPower < maxYeastPower) {
-        yeastPower += yeastRegenRate;
+        yeastPower += 1; // 1ずつ増加
         if (yeastPower > maxYeastPower) yeastPower = maxYeastPower;
         _updateYeastPowerDisplay();
       }
@@ -195,13 +225,10 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   }
   
   void _updateYeastPowerDisplay() {
-    yeastPowerText.text = 'イーストパワー: $yeastPower / $maxYeastPower';
+    yeastPowerText.text = '$yeastPower';
   }
   
   void _updateCastleHpDisplay() {
-    playerCastleHpText.text = 'パン窯HP: $playerCastleHp / $maxPlayerCastleHp';
-    enemyCastleHpText.text = '敵城HP: $enemyCastleHp / $maxEnemyCastleHp';
-    
     // HPバーを更新
     playerCastle.updateHpBar(playerCastleHp, maxPlayerCastleHp);
     enemyCastle.updateHpBar(enemyCastleHp, maxEnemyCastleHp);
@@ -328,7 +355,7 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
     required this.onTap,
     required this.game,
   }) : super(
-    size: Vector2(85, 80), // サイズを小さく
+    size: Vector2(122.4, 80), // 横幅をさらに1.2倍に
     position: position,
   );
   
@@ -348,15 +375,30 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
     );
     add(characterSprite);
     
-    // パワーコスト
-    costText = TextComponent(
-      text: character.powerCost.toString(),
+    // キャラクター名
+    final nameText = TextComponent(
+      text: character.name,
       position: Vector2(size.x / 2, 65), // 位置を下に調整
       anchor: Anchor.center,
       textRenderer: TextPaint(
         style: TextStyle(
           color: Colors.brown.shade800,
-          fontSize: 12, // フォントサイズを少し大きく
+          fontSize: 10, // 名前なので少し小さく
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    add(nameText);
+    
+    // パワーコスト（右下に円で囲む）
+    costText = TextComponent(
+      text: character.powerCost.toString(),
+      position: Vector2(size.x - 15, size.y - 15), // 右下
+      anchor: Anchor.center,
+      textRenderer: TextPaint(
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -378,12 +420,33 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
       ..style = PaintingStyle.fill;
     canvas.drawRRect(rrect, backgroundPaint);
     
-    // 白い枠線を描画
+    // 白い枠線を描画（太く）
     final borderPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+      ..strokeWidth = 4.0;  // 2.0から4.0に太く
     canvas.drawRRect(rrect, borderPaint);
+    
+    // コスト表示用の円を描画（右下）
+    final circlePaint = Paint()
+      ..color = Colors.brown.shade700
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(size.x - 15, size.y - 15),
+      12,
+      circlePaint,
+    );
+    
+    // 円の枠線
+    final circleStrokePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawCircle(
+      Offset(size.x - 15, size.y - 15),
+      12,
+      circleStrokePaint,
+    );
   }
 
   @override
