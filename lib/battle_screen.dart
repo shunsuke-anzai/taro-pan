@@ -9,7 +9,11 @@ class BattleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GameWidget<PanBattleGame>.controlled(
-        gameFactory: PanBattleGame.new,
+        gameFactory: () => PanBattleGame(
+          onGameEnd: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
     );
   }
