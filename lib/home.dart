@@ -201,7 +201,8 @@ class _CharaListState extends State<CharaList> {
     {"name": "カニ", "image": "assets/images/kani_mask.png", "index": 6},
     {"name": "カティ", "image": "assets/images/kati_mask.png", "index": 7},
     {"name": "サンド", "image": "assets/images/sand_mask.png", "index": 8},
-    {"name": "???", "image": "assets/images/hatena.png", "index": 9},
+    {"name": "ショク", "image": "assets/images/shoku_mask.png", "index": 9},
+    {"name": "???", "image": "assets/images/hatena.png", "index": 10},
   ];
 
   @override
@@ -217,15 +218,18 @@ class _CharaListState extends State<CharaList> {
               crossAxisSpacing: 24,
               childAspectRatio: 1,
               children: characters.map((chara) {
+                final characterName = chara["name"] as String;
+                final isObtained = _isCharacterObtained(characterName);
+                
                 return GestureDetector(
-                  onTap: () {
+                  onTap: isObtained ? () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => CharaList2(initialPage: chara["index"] as int),
                       ),
                     );
-                  },
+                  } : null,
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -243,7 +247,7 @@ class _CharaListState extends State<CharaList> {
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                            padding: const EdgeInsets.all(6.0),
                             child: Image.asset(
                               _getCharacterImage(chara["name"] as String, chara["image"] as String),
                               fit: BoxFit.contain,
@@ -284,7 +288,7 @@ class _CharaListState extends State<CharaList> {
   }
 
   String _getCharacterImage(String characterName, String defaultImage) {
-    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド'];
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
     
     if (newCharacters.contains(characterName)) {
       if (obtainedCharacters.contains(characterName)) {
@@ -295,6 +299,17 @@ class _CharaListState extends State<CharaList> {
     }
     
     return defaultImage;
+  }
+  
+  bool _isCharacterObtained(String characterName) {
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
+    
+    if (newCharacters.contains(characterName)) {
+      return obtainedCharacters.contains(characterName);
+    }
+    
+    // 既存キャラクターは常に取得済み扱い
+    return true;
   }
 }
 
@@ -308,6 +323,21 @@ class CharaList2 extends StatefulWidget {
 
 class _CharaList2State extends State<CharaList2> {
   late PageController _pageController;
+  Set<String> obtainedCharacters = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.initialPage);
+    _loadObtainedCharacters();
+  }
+
+  Future<void> _loadObtainedCharacters() async {
+    final obtained = await CharacterCollectionService.getObtainedCharacters();
+    setState(() {
+      obtainedCharacters = obtained;
+    });
+  }
 
   final characters = [
     {"name": "ぷくらん", 
@@ -346,34 +376,56 @@ class _CharaList2State extends State<CharaList2> {
     "image": "assets/images/sand.png",
     "description": "HP: 140\n攻撃力: 22\n消費パワー: 55\n砂を操る大地の守護者。高い防御力を誇る。"
     },
+    {"name": "ショク", 
+    "image": "assets/images/shoku.png",
+    "description": "HP: 105\n攻撃力: 40\n消費パワー: 85\n植物の力を借りて戦う自然の戦士。"
+    },
     {"name": "???", 
     "image": "assets/images/hatena.png",
     "description": "coming soon..."
     },
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(initialPage: widget.initialPage);
-  }
 
   void _previousPage() {
-    if (_pageController.page! > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    final currentPage = _pageController.page!.round();
+    if (currentPage > 0) {
+      final targetPage = currentPage - 1;
+      final targetCharacterName = characters[targetPage]["name"] as String;
+      
+      if (_isCharacterObtained(targetCharacterName)) {
+        _pageController.previousPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
   void _nextPage() {
-    if (_pageController.page! < characters.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    final currentPage = _pageController.page!.round();
+    if (currentPage < characters.length - 1) {
+      final targetPage = currentPage + 1;
+      final targetCharacterName = characters[targetPage]["name"] as String;
+      
+      if (_isCharacterObtained(targetCharacterName)) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
     }
+  }
+  
+  bool _isCharacterObtained(String characterName) {
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
+    
+    if (newCharacters.contains(characterName)) {
+      return obtainedCharacters.contains(characterName);
+    }
+    
+    // 既存キャラクターは常に取得済み扱い
+    return true;
   }
 
   @override
