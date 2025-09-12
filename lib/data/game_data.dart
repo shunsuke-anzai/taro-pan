@@ -6,7 +6,7 @@ class GameData {
       Character(
         name: 'ぷくらん',
         maxHp: 500,
-        attackPower: 100,
+        attackPower: 50,
         powerCost: 30, // 10 × 3 = 30
         description: '基本的なパン戦士。バランスの取れた能力を持つ。',
         imagePath: 'pukuran.png',
@@ -33,7 +33,7 @@ class GameData {
         walkAnimationPath: 'assets/animations/walk_kuresshen.riv',
         attackAnimationPath: 'assets/animations/attack_kuresshen.riv',
         isAreaAttack: true, // 範囲攻撃
-        attackRange: 500.0, // 範囲攻撃の範囲（500px）
+        attackRange: 175.0, // 範囲攻撃の範囲（175px）
       ),
       Character(
         name: 'あんまる',
