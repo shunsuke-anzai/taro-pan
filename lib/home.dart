@@ -202,7 +202,6 @@ class _CharaListState extends State<CharaList> {
     {"name": "カティ", "image": "assets/images/kati_mask.png", "index": 7},
     {"name": "サンド", "image": "assets/images/sand_mask.png", "index": 8},
     {"name": "ショク", "image": "assets/images/shoku_mask.png", "index": 9},
-    {"name": "???", "image": "assets/images/hatena.png", "index": 10},
   ];
 
   @override
@@ -256,7 +255,7 @@ class _CharaListState extends State<CharaList> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          chara["name"] as String,
+                          _getDisplayName(chara["name"] as String),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -299,6 +298,26 @@ class _CharaListState extends State<CharaList> {
     }
     
     return defaultImage;
+  }
+  
+  String _getDisplayName(String characterName) {
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
+    
+    if (newCharacters.contains(characterName) && !obtainedCharacters.contains(characterName)) {
+      return '???';
+    }
+    
+    return characterName;
+  }
+  
+  String _getDisplayNameDetailed(String characterName) {
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
+    
+    if (newCharacters.contains(characterName) && !obtainedCharacters.contains(characterName)) {
+      return '???';
+    }
+    
+    return characterName;
   }
   
   bool _isCharacterObtained(String characterName) {
@@ -380,10 +399,6 @@ class _CharaList2State extends State<CharaList2> {
     "image": "assets/images/shoku.png",
     "description": "HP: 105\n攻撃力: 40\n消費パワー: 85\n植物の力を借りて戦う自然の戦士。"
     },
-    {"name": "???", 
-    "image": "assets/images/hatena.png",
-    "description": "coming soon..."
-    },
   ];
 
 
@@ -415,6 +430,16 @@ class _CharaList2State extends State<CharaList2> {
         );
       }
     }
+  }
+  
+  String _getDisplayNameDetailed(String characterName) {
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
+    
+    if (newCharacters.contains(characterName) && !obtainedCharacters.contains(characterName)) {
+      return '???';
+    }
+    
+    return characterName;
   }
   
   bool _isCharacterObtained(String characterName) {
@@ -480,7 +505,7 @@ class _CharaList2State extends State<CharaList2> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  chara["name"] as String,
+                                  _getDisplayNameDetailed(chara["name"] as String),
                                   style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,

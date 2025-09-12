@@ -20,6 +20,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   UserProgress userProgress = UserProgress();
   GachaResult? currentResult;
   bool isAnimating = false;
+  bool showRetryButton = false;
   Set<String> newlyObtainedCharacters = {};
   
   @override
@@ -72,7 +73,8 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
       _buttonAnimationController.reverse();
     });
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    // 演出のための長いディレイ（ため）
+    await Future.delayed(const Duration(milliseconds: 2000));
 
     final result = GachaService.pullSingle();
     _processGachaResult(result);
@@ -81,6 +83,10 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
     
     await Future.delayed(const Duration(milliseconds: 1200));
     setState(() => isAnimating = false);
+    
+    // キャラ表示から2秒後に「もう一度」ボタンを表示
+    await Future.delayed(const Duration(seconds: 2));
+    setState(() => showRetryButton = true);
   }
 
 
@@ -116,6 +122,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   void _resetResults() {
     setState(() {
       currentResult = null;
+      showRetryButton = false;
       _cardAnimationController.reset();
     });
   }
@@ -138,43 +145,70 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF2E1065),
-              Color(0xFF1E1B4B),
-              Color(0xFF0F0A2E),
+      body: GestureDetector(
+        onTap: !isAnimating ? _performSinglePull : null,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF2E1065),
+                Color(0xFF1E1B4B),
+                Color(0xFF0F0A2E),
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // 背景の星
+              ..._buildBackgroundStars(),
+              
+              // メインコンテンツ
+              SafeArea(
+                child: Column(
+                  children: [
+                    // ヘッダー
+                    _buildHeader(),
+                    
+                    // ガチャ結果エリア
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          currentResult == null 
+                              ? _buildGachaStandby()
+                              : _buildGachaResult(),
+                          
+                          // 右下の「もう一度」ボタン
+                          if (currentResult != null && showRetryButton)
+                            Positioned(
+                              bottom: 20,
+                              right: 20,
+                              child: FloatingActionButton.extended(
+                                onPressed: _resetResults,
+                                backgroundColor: Colors.grey[600],
+                                label: const Text(
+                                  'もう一度',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.refresh,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-        ),
-        child: Stack(
-          children: [
-            // 背景の星
-            ..._buildBackgroundStars(),
-            
-            // メインコンテンツ
-            SafeArea(
-              child: Column(
-                children: [
-                  // ヘッダー
-                  _buildHeader(),
-                  
-                  // ガチャ結果エリア
-                  Expanded(
-                    child: currentResult == null 
-                        ? _buildGachaStandby()
-                        : _buildGachaResult(),
-                  ),
-                  
-                  // ボタンエリア
-                  _buildButtonArea(),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -223,38 +257,57 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   }
 
   Widget _buildGachaStandby() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  Colors.white.withOpacity(0.3),
-                  Colors.transparent,
-                ],
+    return SingleChildScrollView(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 50),
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.3),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: const Icon(
+                Icons.auto_awesome,
+                size: 80,
+                color: Colors.white,
               ),
             ),
-            child: const Icon(
-              Icons.auto_awesome,
-              size: 80,
-              color: Colors.white,
+            const SizedBox(height: 32),
+            Text(
+              isAnimating ? 'ガチャを引いています...' : '運命のパンを引き当てよう！',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 32),
-          const Text(
-            '運命のパンを引き当てよう！',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+            const SizedBox(height: 20),
+            if (isAnimating)
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              )
+            else
+              const Text(
+                '画面をタップしてガチャを引く',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            const SizedBox(height: 50),
+          ],
+        ),
       ),
     );
   }
@@ -387,53 +440,20 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
 
   Widget _buildButtonArea() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          if (currentResult != null) ...[
-            ElevatedButton(
-              onPressed: _resetResults,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[600],
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              child: const Text(
-                'もう一度',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-          
-          AnimatedBuilder(
-            animation: _buttonAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: isAnimating ? _buttonAnimation.value : 1.0,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: !isAnimating ? _performSinglePull : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      minimumSize: const Size(0, 60),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    child: const Text(
-                      'ガチャを引く',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
-                ),
-              );
-            },
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: ElevatedButton(
+        onPressed: _resetResults,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[600],
+          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
           ),
-        ],
+        ),
+        child: const Text(
+          'もう一度',
+          style: TextStyle(fontSize: 18, color: Colors.white),
+        ),
       ),
     );
   }
