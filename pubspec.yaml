@@ -38,6 +38,9 @@ dependencies:
   
   # Flame game engine for 2D games
   flame: ^1.18.0
+  
+  # SharedPreferences for persistent storage
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
