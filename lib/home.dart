@@ -5,6 +5,8 @@ import 'package:rive/rive.dart' as rive;
 import 'battle_screen.dart';
 import 'screens/gacha_screen.dart';
 import 'services/character_collection_service.dart';
+import 'models/gacha_item.dart';
+import 'data/gacha_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -192,16 +194,16 @@ class _CharaListState extends State<CharaList> {
   }
 
   final characters = const [
-    {"name": "ぷくらん", "image": "assets/images/pukuran.png", "index": 0},
-    {"name": "バゲットン", "image": "assets/images/bageton.png", "index": 1},
-    {"name": "クレッシェン", "image": "assets/images/kuresien.png", "index": 2},
-    {"name": "あんまる", "image": "assets/images/anmaru.png", "index": 3},
-    {"name": "ダブルトングマン", "image": "assets/images/panda.png", "index": 4},
-    {"name": "チョコ", "image": "assets/images/choko_mask.png", "index": 5},
-    {"name": "カニ", "image": "assets/images/kani_mask.png", "index": 6},
-    {"name": "カティ", "image": "assets/images/kati_mask.png", "index": 7},
-    {"name": "サンド", "image": "assets/images/sand_mask.png", "index": 8},
-    {"name": "ショク", "image": "assets/images/shoku_mask.png", "index": 9},
+    {"name": "ぷくらん", "image": "assets/images/pukuran.png", "index": 0, "rarity": 3},
+    {"name": "バゲットン", "image": "assets/images/bageton.png", "index": 1, "rarity": 4},
+    {"name": "クレッシェン", "image": "assets/images/kuresien.png", "index": 2, "rarity": 5},
+    {"name": "あんまる", "image": "assets/images/anmaru.png", "index": 3, "rarity": 4},
+    {"name": "ダブルトングマン", "image": "assets/images/panda.png", "index": 4, "rarity": 4},
+    {"name": "チョコ", "image": "assets/images/choko_mask.png", "index": 5, "rarity": 3},
+    {"name": "カニ", "image": "assets/images/kani_mask.png", "index": 6, "rarity": 3},
+    {"name": "カティ", "image": "assets/images/kati_mask.png", "index": 7, "rarity": 4},
+    {"name": "サンド", "image": "assets/images/sand_mask.png", "index": 8, "rarity": 3},
+    {"name": "ショク", "image": "assets/images/shoku_mask.png", "index": 9, "rarity": 4},
   ];
 
   @override
@@ -209,6 +211,15 @@ class _CharaListState extends State<CharaList> {
     return Scaffold(
       body: Stack(
         children: [
+          // 背景画像
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/charaback.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: GridView.count(
@@ -231,38 +242,52 @@ class _CharaListState extends State<CharaList> {
                   } : null,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: _getRarityCardColor(chara["rarity"] as int),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black12,
+                          color: _getRarityBorderColor(chara["rarity"] as int).withOpacity(0.5),
                           blurRadius: 8,
                           offset: Offset(2, 2),
                         ),
                       ],
+                      border: Border.all(
+                        color: _getRarityBorderColor(chara["rarity"] as int),
+                        width: 2,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Stack(
                       children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(6.0),
-                            child: Image.asset(
-                              _getCharacterImage(chara["name"] as String, chara["image"] as String),
-                              fit: BoxFit.contain,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Image.asset(
+                                  _getCharacterImage(chara["name"] as String, chara["image"] as String),
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _getDisplayName(chara["name"] as String),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _getDisplayName(chara["name"] as String),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                        // 右上に星を表示
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: _buildStarRating(chara["rarity"] as int),
                         ),
-                        const SizedBox(height: 8),
                       ],
                     ),
                   ),
@@ -308,6 +333,45 @@ class _CharaListState extends State<CharaList> {
     }
     
     return characterName;
+  }
+  
+  Color _getRarityCardColor(int rarity) {
+    switch (rarity) {
+      case 3:
+        return Colors.blue.withOpacity(0.1);
+      case 4:
+        return Colors.purple.withOpacity(0.1);
+      case 5:
+        return Colors.orange.withOpacity(0.1);
+      default:
+        return Colors.white;
+    }
+  }
+  
+  Color _getRarityBorderColor(int rarity) {
+    switch (rarity) {
+      case 3:
+        return Colors.blue;
+      case 4:
+        return Colors.purple;
+      case 5:
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+  
+  Widget _buildStarRating(int rarity) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(rarity, (index) => 
+        const Icon(
+          Icons.star,
+          color: Colors.amber,
+          size: 16,
+        )
+      ),
+    );
   }
   
   String _getDisplayNameDetailed(String characterName) {
@@ -361,43 +425,53 @@ class _CharaList2State extends State<CharaList2> {
   final characters = [
     {"name": "ぷくらん", 
     "image": "assets/images/pukuran.png",
-    "description": "HP: 100\n攻撃力: 20\n消費パワー: 10\n基本的なパン戦士。バランスの取れた能力を持つ。"
+    "description": "HP: 100\n攻撃力: 20\n消費パワー: 10\n基本的なパン戦士。バランスの取れた能力を持つ。",
+    "rarity": 3
     },
     {"name": "バゲットン", 
     "image": "assets/images/bageton.png",
-    "description": "HP: 120\n攻撃力: 25\n消費パワー: 12\n素早い動きで相手を翻弄するパン戦士。"
+    "description": "HP: 120\n攻撃力: 25\n消費パワー: 12\n素早い動きで相手を翻弄するパン戦士。",
+    "rarity": 4
     },
     {"name": "クレッシェン", 
     "image": "assets/images/kuresien.png",
-    "description": "HP: 110\n攻撃力: 22\n消費パワー: 11\n特殊な技を持つパン戦士。"
+    "description": "HP: 110\n攻撃力: 22\n消費パワー: 11\n特殊な技を持つパン戦士。",
+    "rarity": 5
     },
     {"name": "あんまる", 
     "image": "assets/images/anmaru.png",
-    "description": "HP: 130\n攻撃力: 30\n消費パワー: 15\n防御力が高く、耐久性に優れたパン戦士。"
+    "description": "HP: 130\n攻撃力: 30\n消費パワー: 15\n防御力が高く、耐久性に優れたパン戦士。",
+    "rarity": 4
     },
     {"name": "ダブルトングマン", 
     "image": "assets/images/panda.png",
-    "description": "HP: 140\n攻撃力: 35\n消費パワー: 20\n二つのトングを使いこなすパン戦士。"
+    "description": "HP: 140\n攻撃力: 35\n消費パワー: 20\n二つのトングを使いこなすパン戦士。",
+    "rarity": 4
     },
     {"name": "チョコ", 
     "image": "assets/images/choko.png",
-    "description": "HP: 110\n攻撃力: 28\n消費パワー: 50\n甘い香りで敵を魅了するチョコレート戦士。"
+    "description": "HP: 110\n攻撃力: 28\n消費パワー: 50\n甘い香りで敵を魅了するチョコレート戦士。",
+    "rarity": 3
     },
     {"name": "カニ", 
     "image": "assets/images/kani.png",
-    "description": "HP: 130\n攻撃力: 32\n消費パワー: 70\nハサミで敵を挟み撃ちする甲殻類の戦士。"
+    "description": "HP: 130\n攻撃力: 32\n消費パワー: 70\nハサミで敵を挟み撃ちする甲殻類の戦士。",
+    "rarity": 3
     },
     {"name": "カティ", 
     "image": "assets/images/kati.png",
-    "description": "HP: 95\n攻撃力: 38\n消費パワー: 80\n鋭い爪を持つ俊敏な猫の戦士。"
+    "description": "HP: 95\n攻撃力: 38\n消費パワー: 80\n鋭い爪を持つ俊敏な猫の戦士。",
+    "rarity": 4
     },
     {"name": "サンド", 
     "image": "assets/images/sand.png",
-    "description": "HP: 140\n攻撃力: 22\n消費パワー: 55\n砂を操る大地の守護者。高い防御力を誇る。"
+    "description": "HP: 140\n攻撃力: 22\n消費パワー: 55\n砂を操る大地の守護者。高い防御力を誇る。",
+    "rarity": 3
     },
     {"name": "ショク", 
     "image": "assets/images/shoku.png",
-    "description": "HP: 105\n攻撃力: 40\n消費パワー: 85\n植物の力を借りて戦う自然の戦士。"
+    "description": "HP: 105\n攻撃力: 40\n消費パワー: 85\n植物の力を借りて戦う自然の戦士。",
+    "rarity": 4
     },
   ];
 
@@ -453,11 +527,59 @@ class _CharaList2State extends State<CharaList2> {
     return true;
   }
 
+  Color _getRarityCardColorDetailed(int rarity) {
+    switch (rarity) {
+      case 3:
+        return Colors.blue.withOpacity(0.1);
+      case 4:
+        return Colors.purple.withOpacity(0.1);
+      case 5:
+        return Colors.orange.withOpacity(0.1);
+      default:
+        return Colors.white;
+    }
+  }
+  
+  Color _getRarityBorderColorDetailed(int rarity) {
+    switch (rarity) {
+      case 3:
+        return Colors.blue;
+      case 4:
+        return Colors.purple;
+      case 5:
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+  
+  Widget _buildStarRatingDetailed(int rarity) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(rarity, (index) => 
+        const Icon(
+          Icons.star,
+          color: Colors.amber,
+          size: 24,
+        )
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
+          // 背景画像
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/charaback.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           PageView.builder(
             controller: _pageController,
             itemCount: characters.length,
@@ -469,64 +591,85 @@ class _CharaList2State extends State<CharaList2> {
                 child: Container(
                   width: screenWidth,
                   height: screenHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/chara_bg.png'),
-                      fit: BoxFit.cover,
+                  padding: const EdgeInsets.all(20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _getRarityCardColorDetailed(chara["rarity"] as int),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _getRarityBorderColorDetailed(chara["rarity"] as int),
+                        width: 3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _getRarityBorderColorDetailed(chara["rarity"] as int).withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(0),
-                          child: Image.asset(
-                            chara["image"] as String,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.5), // 透明度0.5の黒背景
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(20),
-                              bottomRight: Radius.circular(20),
+                    child: Stack(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Image.asset(
+                                  chara["image"] as String,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
                             ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _getDisplayNameDetailed(chara["name"] as String),
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.7),
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(17),
+                                    bottomRight: Radius.circular(17),
                                   ),
                                 ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  chara["description"] as String,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        _getDisplayNameDetailed(chara["name"] as String),
+                                        style: const TextStyle(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Text(
+                                        chara["description"] as String,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ),
-                    ],
+                        // 右上に星を表示
+                        Positioned(
+                          top: 15,
+                          right: 15,
+                          child: _buildStarRatingDetailed(chara["rarity"] as int),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
