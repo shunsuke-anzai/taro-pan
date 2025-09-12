@@ -38,16 +38,13 @@ dependencies:
   
   # Flame game engine for 2D games
   flame: ^1.18.0
-<<<<<<< HEAD
   
   # SharedPreferences for persistent storage
   shared_preferences: ^2.2.2
-=======
   flame_rive: ^1.10.6
   
   # Audio player for BGM and sound effects
   audioplayers: ^6.0.0
->>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
 
 dev_dependencies:
   flutter_test:
