@@ -6,6 +6,7 @@ import 'package:flame/game.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
 import 'package:flame_rive/flame_rive.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../models/character.dart';
 import '../models/enemy.dart';
 import '../data/game_data.dart';
@@ -15,6 +16,15 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   late double gameWidth;
   late double gameHeight;
   final VoidCallback? onGameEnd;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  
+  Future<void> _playAttackSound() async {
+    try {
+      await _audioPlayer.play(AssetSource('BGM/劇的に殴る蹴るなどの.mp3'));
+    } catch (e) {
+      // エラー時は何もしない
+    }
+  }
   
   PanBattleGame({this.onGameEnd});
   
@@ -81,7 +91,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   Future<void> _addOven() async {
     playerCastle = CastleComponent(
       spritePath: 'kama.png',
-      castleSize: Vector2(357, 259), // 正方形にして元画像の比率を保持
+      castleSize: Vector2(178, 129), // 正方形にして元画像の比率を保持
       castlePosition: Vector2(20, 100),
       isPlayerCastle: true,
     );
@@ -178,7 +188,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   }
   
   Future<void> _addCharacterButtons() async {
-    final characters = GameData.getAllCharacters();
+    final characters = GameData.getAllCharacters().take(5).toList(); // 先頭5体のみ
     
     // ボタンサイズをさらに1.2倍に設定
     final buttonWidth = 122.4;  // 102 * 1.2
@@ -598,6 +608,7 @@ class DeployedCharacterComponent extends PositionComponent {
         lastAttackTime = currentTime;
         
         _startAttackAnimation();
+        (parent as PanBattleGame)._playAttackSound();
         
         if (character.isAreaAttack) {
           // 範囲攻撃の場合：範囲内のすべての敵を攻撃
@@ -642,6 +653,7 @@ class DeployedCharacterComponent extends PositionComponent {
         if (currentTime - lastAttackTime > 1.5) {
           lastAttackTime = currentTime;
           _startAttackAnimation();
+          (parent as PanBattleGame)._playAttackSound();
           game.enemyCastleHp -= character.attackPower;
           if (game.enemyCastleHp < 0) game.enemyCastleHp = 0;
           game._updateCastleHpDisplay();
@@ -775,6 +787,7 @@ class SpawnedEnemyComponent extends SpriteComponent {
         // 2秒間隔で攻撃
         if (currentTime - lastAttackTime > 2.0) {
           lastAttackTime = currentTime;
+          (parent as PanBattleGame)._playAttackSound();
           ally.character.takeDamage(enemy.attackPower);
           
           if (!ally.character.isAlive) {
@@ -788,6 +801,7 @@ class SpawnedEnemyComponent extends SpriteComponent {
       if (currentTime - lastAttackTime > 2.0) {
         lastAttackTime = currentTime;
         final game = parent as PanBattleGame;
+        game._playAttackSound();
         game.playerCastleHp -= enemy.attackPower;
         if (game.playerCastleHp < 0) game.playerCastleHp = 0;
         if (!game.playerCastle.isPlayingDamageAnimation) {

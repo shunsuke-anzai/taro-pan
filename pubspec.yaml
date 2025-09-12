@@ -39,6 +39,9 @@ dependencies:
   # Flame game engine for 2D games
   flame: ^1.18.0
   flame_rive: ^1.10.6
+  
+  # Audio player for BGM and sound effects
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +69,7 @@ flutter:
   assets:
     - assets/images/
     - assets/animations/
+    - assets/BGM/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

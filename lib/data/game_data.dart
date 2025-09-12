@@ -55,6 +55,66 @@ class GameData {
         walkAnimationPath: 'assets/animations/walk_doubletongman.riv',
         attackAnimationPath: 'assets/animations/attack_doubletongman.riv',
       ),
+      Character(
+        name: 'チョコホ',
+        maxHp: 95,
+        attackPower: 38,
+        powerCost: 51, // 17 × 3 = 51
+        description: 'チョコレートの甘い香りを漂わせるパン戦士。',
+        imagePath: 'choko.png',
+        lockedImagePath: 'kuro_choko.png',
+        walkAnimationPath: 'assets/animations/walk_kuro_choko.riv',
+        attackAnimationPath: 'assets/animations/attack_kuro_choko.riv',
+        isUnlocked: false, // アンロックフラグ
+      ),
+      Character(
+        name: 'クラブン',
+        maxHp: 85,
+        attackPower: 42,
+        powerCost: 57, // 19 × 3 = 57
+        description: 'カニのようなハサミで敵を挟むパン戦士。',
+        imagePath: 'kani.png',
+        lockedImagePath: 'kuro_kani.png',
+        walkAnimationPath: 'assets/animations/walk_kuro_kani.riv',
+        attackAnimationPath: 'assets/animations/attack_kuro_kani.riv',
+        isUnlocked: false, // アンロックフラグ
+      ),
+      Character(
+        name: 'カティ',
+        maxHp: 110,
+        attackPower: 35,
+        powerCost: 48, // 16 × 3 = 48
+        description: 'カティな形状で素早い動きをするパン戦士。',
+        imagePath: 'kati.png',
+        lockedImagePath: 'kuro_kati.png',
+        walkAnimationPath: 'assets/animations/walk_kuro_kati.riv',
+        attackAnimationPath: 'assets/animations/attack_kuro_kati.riv',
+        isUnlocked: false, // アンロックフラグ
+      ),
+      Character(
+        name: 'サンドパン',
+        maxHp: 100,
+        attackPower: 36,
+        powerCost: 54, // 18 × 3 = 54
+        description: 'サンドイッチのように層になったパン戦士。',
+        imagePath: 'sand.png',
+        lockedImagePath: 'kuro_sand.png',
+        walkAnimationPath: 'assets/animations/walk_kuro_sand.riv',
+        attackAnimationPath: 'assets/animations/attack_kuro_sand.riv',
+        isUnlocked: false, // アンロックフラグ
+      ),
+      Character(
+        name: 'ショク',
+        maxHp: 120,
+        attackPower: 45,
+        powerCost: 60, // 20 × 3 = 60
+        description: '食べ物の力でパワーアップするパン戦士。',
+        imagePath: 'shoku.png',
+        lockedImagePath: 'kuro_shoku.png',
+        walkAnimationPath: 'assets/animations/walk_kuro_shoku.riv',
+        attackAnimationPath: 'assets/animations/attack_kuro_shoku.riv',
+        isUnlocked: false, // アンロックフラグ
+      ),
     ];
   }
 }

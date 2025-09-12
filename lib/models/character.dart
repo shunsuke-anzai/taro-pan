@@ -5,10 +5,12 @@ class Character {
   final int powerCost;
   final String description;
   final String imagePath;
+  final String? lockedImagePath;
   final String walkAnimationPath; // 横移動アニメーション
   final String attackAnimationPath; // 攻撃アニメーション
   final bool isAreaAttack; // 範囲攻撃かどうか
   final double attackRange; // 攻撃範囲（範囲攻撃の場合のみ使用）
+  final bool isUnlocked; // アンロックフラグ
   int currentHp;
 
   Character({
@@ -18,10 +20,12 @@ class Character {
     required this.powerCost,
     required this.description,
     required this.imagePath,
+    this.lockedImagePath,
     required this.walkAnimationPath,
     required this.attackAnimationPath,
     this.isAreaAttack = false, // デフォルトは単体攻撃
     this.attackRange = 50.0, // デフォルト攻撃範囲
+    this.isUnlocked = true, // デフォルトはアンロック済み
   }) : currentHp = maxHp;
 
   bool get isAlive => currentHp > 0;
@@ -34,6 +38,8 @@ class Character {
     currentHp = (currentHp + amount).clamp(0, maxHp);
   }
 
+  String get displayImagePath => isUnlocked ? imagePath : (lockedImagePath ?? imagePath);
+
   Character copyWith({
     String? name,
     int? maxHp,
@@ -41,10 +47,12 @@ class Character {
     int? powerCost,
     String? description,
     String? imagePath,
+    String? lockedImagePath,
     String? walkAnimationPath,
     String? attackAnimationPath,
     bool? isAreaAttack,
     double? attackRange,
+    bool? isUnlocked,
     int? currentHp,
   }) {
     return Character(
@@ -54,10 +62,12 @@ class Character {
       powerCost: powerCost ?? this.powerCost,
       description: description ?? this.description,
       imagePath: imagePath ?? this.imagePath,
+      lockedImagePath: lockedImagePath ?? this.lockedImagePath,
       walkAnimationPath: walkAnimationPath ?? this.walkAnimationPath,
       attackAnimationPath: attackAnimationPath ?? this.attackAnimationPath,
       isAreaAttack: isAreaAttack ?? this.isAreaAttack,
       attackRange: attackRange ?? this.attackRange,
+      isUnlocked: isUnlocked ?? this.isUnlocked,
     )..currentHp = currentHp ?? this.currentHp;
   }
 }
