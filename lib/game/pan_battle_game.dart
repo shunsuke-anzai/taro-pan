@@ -324,7 +324,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
       // キャラクターを配置 - 全て同じY座標（横列）
       final deployedChar = DeployedCharacterComponent(
         character: character,
-        position: Vector2(170, 180), // Y座標を少し低く調整
+        position: Vector2(170, 220), // Y座標をさらに低く調整
       );
       add(deployedChar);
     }
@@ -334,7 +334,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
     final enemy = EnemyData.getRandomEnemy();
     final spawnedEnemy = SpawnedEnemyComponent(
       enemy: enemy,
-      position: Vector2(gameWidth - 200, 180), // キャラクターと同じY座標
+      position: Vector2(gameWidth - 200, 220), // キャラクターと同じY座標
     );
     add(spawnedEnemy);
   }
@@ -495,6 +495,7 @@ class DeployedCharacterComponent extends PositionComponent {
   }) : super(
     size: Vector2(100, 120),
     position: position,
+    priority: 20, // 敵より前に表示
   );
   
   @override
@@ -716,6 +717,8 @@ class DeployedCharacterComponent extends PositionComponent {
     if (currentRiveComponent != walkRiveComponent) {
       currentRiveComponent?.removeFromParent();
       currentRiveComponent = walkRiveComponent;
+      // 歩行アニメーションは敵より前に表示
+      currentRiveComponent!.priority = 20;
       add(currentRiveComponent!);
     }
   }
@@ -724,6 +727,8 @@ class DeployedCharacterComponent extends PositionComponent {
     if (currentRiveComponent != attackRiveComponent) {
       currentRiveComponent?.removeFromParent();
       currentRiveComponent = attackRiveComponent;
+      // 攻撃アニメーションを最前面に表示（UIより高い優先度）
+      currentRiveComponent!.priority = 1000;
       add(currentRiveComponent!);
     }
   }
@@ -749,6 +754,8 @@ class SpawnedEnemyComponent extends SpriteComponent {
   Future<void> onLoad() async {
     // 敵キャラクター画像を設定
     sprite = await Sprite.load(enemy.imagePath);
+    // 敵キャラクターを背景より前、味方より後ろに表示
+    priority = 10;
   }
   
   @override
