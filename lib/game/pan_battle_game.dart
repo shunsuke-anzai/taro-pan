@@ -16,11 +16,16 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   late double gameWidth;
   late double gameHeight;
   final VoidCallback? onGameEnd;
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  
   Future<void> _playAttackSound() async {
     try {
-      await _audioPlayer.play(AssetSource('BGM/劇的に殴る蹴るなどの.mp3'));
+      // 新しいAudioPlayerインスタンスを作成して効果音を重複再生
+      final audioPlayer = AudioPlayer();
+      await audioPlayer.play(AssetSource('BGM/劇的に殴る蹴るなどの.mp3'));
+      
+      // 効果音終了後にプレイヤーを破棄
+      audioPlayer.onPlayerComplete.listen((event) {
+        audioPlayer.dispose();
+      });
     } catch (e) {
       // エラー時は何もしない
     }
@@ -488,7 +493,7 @@ class DeployedCharacterComponent extends PositionComponent {
     required this.character,
     required Vector2 position,
   }) : super(
-    size: Vector2(80, 100),
+    size: Vector2(100, 120),
     position: position,
   );
   
@@ -500,7 +505,7 @@ class DeployedCharacterComponent extends PositionComponent {
     walkArtboard.addController(SimpleAnimation('Timeline 1'));
     walkRiveComponent = RiveComponent(
       artboard: walkArtboard,
-      size: Vector2(80, 100),
+      size: Vector2(100, 120),
       anchor: Anchor.bottomCenter,
     );
     
@@ -510,7 +515,7 @@ class DeployedCharacterComponent extends PositionComponent {
     attackArtboard.addController(SimpleAnimation('Timeline 1'));
     attackRiveComponent = RiveComponent(
       artboard: attackArtboard,
-      size: Vector2(80, 100),
+      size: Vector2(100, 120),
       anchor: Anchor.bottomCenter,
     );
     
@@ -527,7 +532,7 @@ class DeployedCharacterComponent extends PositionComponent {
       bool shouldMove = true;
       
       if (character.name == 'クレッシェン') {
-        // クレッシェンの場合：最も近い敵から300px離れた場所で停止
+        // クレッシェンの場合：最も近い敵から125px離れた場所で停止
         final enemies = parent!.children.whereType<SpawnedEnemyComponent>();
         if (enemies.isNotEmpty) {
           double closestDistance = double.infinity;
@@ -538,8 +543,8 @@ class DeployedCharacterComponent extends PositionComponent {
             }
           }
           
-          // 最も近い敵から300px以内の場合は移動を停止
-          if (closestDistance <= 300) {
+          // 最も近い敵から125px以内の場合は移動を停止
+          if (closestDistance <= 125) {
             shouldMove = false;
             if (!isInBattle) {
               isInBattle = true; // 攻撃開始
@@ -585,7 +590,7 @@ class DeployedCharacterComponent extends PositionComponent {
       // 味方が戦闘中でない場合のみ新しい戦闘を開始
       if (!isInBattle) {
         final distance = position.distanceTo(enemy.position);
-        if (distance < 50) {
+        if (distance < 80) {
           // 戦闘開始
           isInBattle = true;
           // 敵が城を攻撃中でも、味方との戦闘を優先させる
@@ -597,8 +602,10 @@ class DeployedCharacterComponent extends PositionComponent {
   }
   
   void _processBattle() {
+    // 範囲攻撃キャラクターの場合は攻撃範囲を、それ以外は100pxを戦闘判定距離とする
+    final battleDistance = character.isAreaAttack ? character.attackRange : 120.0;
     final enemies = parent!.children.whereType<SpawnedEnemyComponent>()
-        .where((e) => e.isInBattle && position.distanceTo(e.position) < 100);
+        .where((e) => e.isInBattle && position.distanceTo(e.position) < battleDistance);
     
     final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
     
@@ -648,8 +655,18 @@ class DeployedCharacterComponent extends PositionComponent {
       final game = parent as PanBattleGame;
       final castleX = game.gameWidth - 220; // 城の位置
       
-      if (position.x >= castleX - 50) {
-        // 城に接近している場合は城を攻撃
+      bool canAttackCastle = false;
+      if (character.isAreaAttack) {
+        // 範囲攻撃キャラクターの場合：城との距離が攻撃範囲以内なら攻撃
+        final distanceToCastle = (castleX - position.x).abs();
+        canAttackCastle = distanceToCastle <= character.attackRange;
+      } else {
+        // 通常キャラクターの場合：従来通りの距離判定
+        canAttackCastle = position.x >= castleX - 50;
+      }
+      
+      if (canAttackCastle) {
+        // 城を攻撃
         if (currentTime - lastAttackTime > 1.5) {
           lastAttackTime = currentTime;
           _startAttackAnimation();
@@ -764,7 +781,7 @@ class SpawnedEnemyComponent extends SpriteComponent {
       // 敵が戦闘中でない場合のみ新しい戦闘を開始
       if (!isInBattle) {
         final distance = position.distanceTo(ally.position);
-        if (distance < 50) {
+        if (distance < 80) {
           // 戦闘開始
           isInBattle = true;
           // 味方が城を攻撃中でも、敵との戦闘を優先させる
@@ -777,7 +794,7 @@ class SpawnedEnemyComponent extends SpriteComponent {
   
   void _processBattle() {
     final allies = parent!.children.whereType<DeployedCharacterComponent>()
-        .where((a) => a.isInBattle && position.distanceTo(a.position) < 100);
+        .where((a) => a.isInBattle && position.distanceTo(a.position) < 120);
     
     final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
     
@@ -797,17 +814,26 @@ class SpawnedEnemyComponent extends SpriteComponent {
         }
       }
     } else {
-      // 味方がいない場合はパン窯を攻撃
-      if (currentTime - lastAttackTime > 2.0) {
-        lastAttackTime = currentTime;
-        final game = parent as PanBattleGame;
-        game._playAttackSound();
-        game.playerCastleHp -= enemy.attackPower;
-        if (game.playerCastleHp < 0) game.playerCastleHp = 0;
-        if (!game.playerCastle.isPlayingDamageAnimation) {
-          game.playerCastle.playDamageAnimation(); // ダメージアニメーション再生
+      // 味方がいない場合
+      final ovenX = 20 + 180; // パン窯の右端位置
+      
+      if (position.x <= ovenX + 50) {
+        // パン窯に接近している場合はパン窯を攻撃
+        if (currentTime - lastAttackTime > 2.0) {
+          lastAttackTime = currentTime;
+          final game = parent as PanBattleGame;
+          game._playAttackSound();
+          game.playerCastleHp -= enemy.attackPower;
+          if (game.playerCastleHp < 0) game.playerCastleHp = 0;
+          if (!game.playerCastle.isPlayingDamageAnimation) {
+            game.playerCastle.playDamageAnimation(); // ダメージアニメーション再生
+          }
+          game._updateCastleHpDisplay();
         }
-        game._updateCastleHpDisplay();
+      } else {
+        // パン窯から離れている場合は戦闘状態をリセット（他の敵が味方を倒した可能性）
+        isInBattle = false;
+        lastAttackTime = currentTime;
       }
     }
   }
