@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:taro_pan/main.dart';
 import 'package:rive/rive.dart' as rive;
+import 'package:audioplayers/audioplayers.dart';
 import 'battle_screen.dart';
+<<<<<<< HEAD
 import 'screens/gacha_screen.dart';
 import 'services/character_collection_service.dart';
 import 'models/gacha_item.dart';
 import 'data/gacha_data.dart';
+=======
+import 'data/game_data.dart';
+>>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late rive.RiveAnimationController _controller;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -30,11 +36,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     
     WidgetsBinding.instance.addObserver(this);
     _controller = rive.SimpleAnimation('Timeline 1');
+    _playBGM();
+  }
+  
+  Future<void> _playBGM() async {
+    try {
+      await _audioPlayer.play(AssetSource('BGM/クリームパンに見えるなぁ.mp3'));
+      _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    } catch (e) {
+      print('BGM再生エラー: $e');
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -45,6 +62,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() {
         _controller = rive.SimpleAnimation('Timeline 1');
       });
+      _audioPlayer.resume();
+    } else if (state == AppLifecycleState.paused) {
+      _audioPlayer.pause();
     }
   }
 
@@ -173,6 +193,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 class CharaList extends StatefulWidget {
   const CharaList({super.key});
 
+<<<<<<< HEAD
   @override
   State<CharaList> createState() => _CharaListState();
 }
@@ -206,8 +227,13 @@ class _CharaListState extends State<CharaList> {
     {"name": "ショク", "image": "assets/images/shoku_mask.png", "index": 9, "rarity": 4},
   ];
 
+=======
+>>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
   @override
+
   Widget build(BuildContext context) {
+    final characters = GameData.getAllCharacters();
+    
     return Scaffold(
       body: Stack(
         children: [
@@ -223,20 +249,26 @@ class _CharaListState extends State<CharaList> {
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: GridView.count(
-              crossAxisCount: 3,
+              crossAxisCount: 4,
               mainAxisSpacing: 24,
               crossAxisSpacing: 24,
               childAspectRatio: 1,
+<<<<<<< HEAD
               children: characters.map((chara) {
                 final characterName = chara["name"] as String;
                 final isObtained = _isCharacterObtained(characterName);
                 
+=======
+              children: characters.asMap().entries.map((entry) {
+                final index = entry.key;
+                final character = entry.value;
+>>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
                 return GestureDetector(
                   onTap: isObtained ? () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CharaList2(initialPage: chara["index"] as int),
+                        builder: (context) => CharaList2(initialPage: index),
                       ),
                     );
                   } : null,
@@ -258,6 +290,7 @@ class _CharaListState extends State<CharaList> {
                     ),
                     child: Stack(
                       children: [
+<<<<<<< HEAD
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -269,6 +302,14 @@ class _CharaListState extends State<CharaList> {
                                   fit: BoxFit.contain,
                                 ),
                               ),
+=======
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Image.asset(
+                              'assets/images/${character.displayImagePath}',
+                              fit: BoxFit.contain,
+>>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
                             ),
                             const SizedBox(height: 8),
                             Container(
@@ -316,11 +357,22 @@ class _CharaListState extends State<CharaList> {
                             const SizedBox(height: 8),
                           ],
                         ),
+<<<<<<< HEAD
                         // 右上に星を表示
                         Positioned(
                           top: 8,
                           right: 8,
                           child: _buildStarRating(chara["rarity"] as int),
+=======
+                        const SizedBox(height: 8),
+                        Text(
+                          character.isUnlocked ? character.name : "???",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+>>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
                         ),
                       ],
                     ),
@@ -440,13 +492,37 @@ class CharaList2 extends StatefulWidget {
 
 class _CharaList2State extends State<CharaList2> {
   late PageController _pageController;
+<<<<<<< HEAD
   Set<String> obtainedCharacters = {};
+=======
+  late List<dynamic> characters;
+>>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: widget.initialPage);
+<<<<<<< HEAD
     _loadObtainedCharacters();
+=======
+    
+    // GameDataからキャラクター情報を取得
+    final gameCharacters = GameData.getAllCharacters();
+    characters = gameCharacters.map((char) => {
+      "name": char.isUnlocked ? char.name : "???",
+      "image": "assets/images/${char.displayImagePath}",
+      "description": char.isUnlocked 
+          ? "HP: ${char.maxHp}\n攻撃力: ${char.attackPower}\n消費パワー: ${char.powerCost ~/ 3}\n${char.description}"
+          : "coming soon..."
+    }).toList();
+    
+    // 最後の hatena.png キャラクターを追加
+    characters.add({
+      "name": "???",
+      "image": "assets/images/hatena.png",
+      "description": "coming soon..."
+    });
+>>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
   }
 
   Future<void> _loadObtainedCharacters() async {
