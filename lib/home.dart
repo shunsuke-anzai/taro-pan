@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:taro_pan/main.dart';
 import 'package:rive/rive.dart' as rive;
 import 'battle_screen.dart';
+import 'screens/gacha_screen.dart';
+import 'services/character_collection_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -119,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const PanBattleApp()),
+                          MaterialPageRoute(builder: (context) => const GachaScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -166,8 +168,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 }
 
-class CharaList extends StatelessWidget {
+class CharaList extends StatefulWidget {
   const CharaList({super.key});
+
+  @override
+  State<CharaList> createState() => _CharaListState();
+}
+
+class _CharaListState extends State<CharaList> {
+  Set<String> obtainedCharacters = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadObtainedCharacters();
+  }
+
+  Future<void> _loadObtainedCharacters() async {
+    final obtained = await CharacterCollectionService.getObtainedCharacters();
+    setState(() {
+      obtainedCharacters = obtained;
+    });
+  }
 
   final characters = const [
     {"name": "ぷくらん", "image": "assets/images/pukuran.png", "index": 0},
@@ -175,7 +197,11 @@ class CharaList extends StatelessWidget {
     {"name": "クレッシェン", "image": "assets/images/kuresien.png", "index": 2},
     {"name": "あんまる", "image": "assets/images/anmaru.png", "index": 3},
     {"name": "ダブルトングマン", "image": "assets/images/panda.png", "index": 4},
-    {"name": "???", "image": "assets/images/hatena.png", "index": 5},
+    {"name": "チョコ", "image": "assets/images/choko_mask.png", "index": 5},
+    {"name": "カニ", "image": "assets/images/kani_mask.png", "index": 6},
+    {"name": "カティ", "image": "assets/images/kati_mask.png", "index": 7},
+    {"name": "サンド", "image": "assets/images/sand_mask.png", "index": 8},
+    {"name": "???", "image": "assets/images/hatena.png", "index": 9},
   ];
 
   @override
@@ -219,7 +245,7 @@ class CharaList extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Image.asset(
-                              chara["image"] as String,
+                              _getCharacterImage(chara["name"] as String, chara["image"] as String),
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -256,6 +282,20 @@ class CharaList extends StatelessWidget {
       ),
     );
   }
+
+  String _getCharacterImage(String characterName, String defaultImage) {
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド'];
+    
+    if (newCharacters.contains(characterName)) {
+      if (obtainedCharacters.contains(characterName)) {
+        return defaultImage.replaceAll('_mask.png', '.png');
+      } else {
+        return defaultImage;
+      }
+    }
+    
+    return defaultImage;
+  }
 }
 
 class CharaList2 extends StatefulWidget {
@@ -289,6 +329,22 @@ class _CharaList2State extends State<CharaList2> {
     {"name": "ダブルトングマン", 
     "image": "assets/images/panda.png",
     "description": "HP: 140\n攻撃力: 35\n消費パワー: 20\n二つのトングを使いこなすパン戦士。"
+    },
+    {"name": "チョコ", 
+    "image": "assets/images/choko.png",
+    "description": "HP: 110\n攻撃力: 28\n消費パワー: 50\n甘い香りで敵を魅了するチョコレート戦士。"
+    },
+    {"name": "カニ", 
+    "image": "assets/images/kani.png",
+    "description": "HP: 130\n攻撃力: 32\n消費パワー: 70\nハサミで敵を挟み撃ちする甲殻類の戦士。"
+    },
+    {"name": "カティ", 
+    "image": "assets/images/kati.png",
+    "description": "HP: 95\n攻撃力: 38\n消費パワー: 80\n鋭い爪を持つ俊敏な猫の戦士。"
+    },
+    {"name": "サンド", 
+    "image": "assets/images/sand.png",
+    "description": "HP: 140\n攻撃力: 22\n消費パワー: 55\n砂を操る大地の守護者。高い防御力を誇る。"
     },
     {"name": "???", 
     "image": "assets/images/hatena.png",

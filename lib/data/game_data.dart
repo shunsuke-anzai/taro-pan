@@ -43,6 +43,46 @@ class GameData {
         description: '素早い動きで敵を翻弄する忍者。',
         imagePath: 'doubletongman.png',
       ),
+      Character(
+        name: 'チョコ',
+        maxHp: 110,
+        attackPower: 28,
+        powerCost: 50,
+        description: '甘い香りで敵を魅了するチョコレート戦士。',
+        imagePath: 'choko.png',
+      ),
+      Character(
+        name: 'カニ',
+        maxHp: 130,
+        attackPower: 32,
+        powerCost: 70,
+        description: 'ハサミで敵を挟み撃ちする甲殻類の戦士。',
+        imagePath: 'kani.png',
+      ),
+      Character(
+        name: 'カティ',
+        maxHp: 95,
+        attackPower: 38,
+        powerCost: 80,
+        description: '鋭い爪を持つ俊敏な猫の戦士。',
+        imagePath: 'kati.png',
+      ),
+      Character(
+        name: 'サンド',
+        maxHp: 140,
+        attackPower: 22,
+        powerCost: 55,
+        description: '砂を操る大地の守護者。高い防御力を誇る。',
+        imagePath: 'sand.png',
+      ),
+      Character(
+        name: 'ショク',
+        maxHp: 105,
+        attackPower: 40,
+        powerCost: 85,
+        description: '植物の力を借りて戦う自然の戦士。',
+        imagePath: 'shoku.png',
+      ),
     ];
   }
 }
