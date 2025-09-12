@@ -20,6 +20,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   UserProgress userProgress = UserProgress();
   GachaResult? currentResult;
   bool isAnimating = false;
+  Set<String> newlyObtainedCharacters = {};
   
   @override
   void initState() {
@@ -83,17 +84,33 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   }
 
 
-  void _processGachaResult(GachaResult result) {
-    setState(() {
-      currentResult = result;
-    });
-
+  void _processGachaResult(GachaResult result) async {
+    // 新キャラ判定：ガチャを引く前に未取得だったキャラを特定
+    final newCharactersInThisPull = <String>{};
+    
     for (final item in result.items) {
       if (item.type == ItemType.character && item.character != null) {
+        final characterName = item.character!.name;
+        final wasAlreadyObtained = await CharacterCollectionService.isCharacterObtained(characterName);
+        
+        if (!wasAlreadyObtained && _isNewCharacter(characterName)) {
+          newCharactersInThisPull.add(characterName);
+        }
+        
         userProgress.unlockCharacter(item.id);
-        CharacterCollectionService.markCharacterAsObtained(item.character!.name);
+        CharacterCollectionService.markCharacterAsObtained(characterName);
       }
     }
+    
+    setState(() {
+      currentResult = result;
+      newlyObtainedCharacters = newCharactersInThisPull;
+    });
+  }
+  
+  bool _isNewCharacter(String characterName) {
+    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
+    return newCharacters.contains(characterName);
   }
 
   void _resetResults() {
@@ -284,50 +301,83 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Text(
-              item.rarity.displayName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  item.rarity.displayName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                  child: item.imagePath.isNotEmpty
+                      ? Image.asset(item.imagePath, fit: BoxFit.contain)
+                      : const Icon(Icons.help, size: 60, color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  item.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    item.description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.2),
-              ),
-              child: item.imagePath.isNotEmpty
-                  ? Image.asset(item.imagePath, fit: BoxFit.contain)
-                  : const Icon(Icons.help, size: 60, color: Colors.white),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              item.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                item.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
+            // New ラベル
+            if (item.character != null && newlyObtainedCharacters.contains(item.character!.name))
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    'NEW',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
