@@ -271,12 +271,46 @@ class _CharaListState extends State<CharaList> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              _getDisplayName(chara["name"] as String),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.9),
+                                    Colors.white.withOpacity(0.7),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Text(
+                                _getDisplayName(chara["name"] as String),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black87,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.white.withOpacity(0.8),
+                                      offset: const Offset(1, 1),
+                                      blurRadius: 2,
+                                    ),
+                                  ],
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ),
                             const SizedBox(height: 8),
