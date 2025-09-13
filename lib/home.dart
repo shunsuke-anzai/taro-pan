@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rive/rive.dart' as rive;
-import 'package:audioplayers/audioplayers.dart';
 import 'battle_screen.dart';
 import 'screens/gacha_screen.dart';
 import 'services/character_collection_service.dart';
+import 'services/bgm_service.dart';
+import 'services/se_service.dart';
 import 'data/game_data.dart';
 import 'widgets/character_level_widget.dart';
 
@@ -19,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late rive.RiveAnimationController _controller;
   late rive.RiveAnimationController _repeatController;
   bool _showRepeat = false;
-  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -33,32 +33,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     
     WidgetsBinding.instance.addObserver(this);
     _controller = rive.SimpleAnimation('Timeline 1');
-    _repeatController = rive.SimpleAnimation('Timeline 1');
+    _repeatController = rive.SimpleAnimation('Loop', autoplay: true);
     _controller.isActiveChanged.addListener(_onIntroActiveChanged);
+    
+    // アプリ起動時にBGMを開始
+    _playBGM();
   }
   
   void _onIntroActiveChanged() {
     if (!_controller.isActive) {
       setState(() {
         _showRepeat = true;
+        _repeatController.isActive = true;
       });
     }
   }
 
   Future<void> _playBGM() async {
-    try {
-      await _audioPlayer.play(AssetSource('BGM/クリームパンに見えるなぁ.mp3'));
-      _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    } catch (e) {
-      print('BGM再生エラー: $e');
-    }
+    print('ホーム画面でBGM再生を開始します');
+    await BGMService().playBGM('BGM/bgm.mp3');
   }
 
   @override
   void dispose() {
     _controller.isActiveChanged.removeListener(_onIntroActiveChanged);
     WidgetsBinding.instance.removeObserver(this);
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -69,9 +68,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() {
         _controller = rive.SimpleAnimation('Timeline 1');
       });
-      _audioPlayer.resume();
+      BGMService().resumeBGM();
     } else if (state == AppLifecycleState.paused) {
-      _audioPlayer.pause();
+      BGMService().pauseBGM();
     }
   }
 
@@ -132,7 +131,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     height: 40,
                     child: ElevatedButton(
                       onPressed: () {
-                        _playBGM();
+                        SEService.playButtonSE();
+                        BGMService().stopBGM();
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const BattleScreen()),
@@ -155,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     height: 40,
                     child: ElevatedButton(
                       onPressed: () {
+                        SEService.playButtonSE();
                         _playBGM();
                         Navigator.push(
                           context,
@@ -178,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     height: 40,
                     child: ElevatedButton(
                       onPressed: () {
+                        SEService.playButtonSE();
                         _playBGM();
                         Navigator.push(
                           context,
@@ -257,6 +259,7 @@ class _CharaListState extends State<CharaList> {
                 final character = entry.value;
                 return GestureDetector(
                   onTap: _isCharacterObtained(character.name) ? () {
+                    SEService.playButtonSE();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -320,7 +323,7 @@ class _CharaListState extends State<CharaList> {
                                       ),
                                     ],
                                     border: Border.all(
-                                      color: Colors.white,
+                                      color: Colors.black,
                                       width: 2,
                                     ),
                                   ),

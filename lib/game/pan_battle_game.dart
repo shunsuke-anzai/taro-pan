@@ -127,24 +127,24 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(
-              color: Colors.white,
-              offset: Offset(-2, -2),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(-3, -3),
+              blurRadius: 1,
             ),
             Shadow(
-              color: Colors.white,
-              offset: Offset(2, -2),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(3, -3),
+              blurRadius: 1,
             ),
             Shadow(
-              color: Colors.white,
-              offset: Offset(-2, 2),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(-3, 3),
+              blurRadius: 1,
             ),
             Shadow(
-              color: Colors.white,
-              offset: Offset(2, 2),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(3, 3),
+              blurRadius: 1,
             ),
           ],
         ),
@@ -163,24 +163,24 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(
-              color: Colors.white,
-              offset: Offset(-1, -1),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(-2, -2),
+              blurRadius: 1,
             ),
             Shadow(
-              color: Colors.white,
-              offset: Offset(1, -1),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(2, -2),
+              blurRadius: 1,
             ),
             Shadow(
-              color: Colors.white,
-              offset: Offset(-1, 1),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(-2, 2),
+              blurRadius: 1,
             ),
             Shadow(
-              color: Colors.white,
-              offset: Offset(1, 1),
-              blurRadius: 0,
+              color: Colors.black,
+              offset: Offset(2, 2),
+              blurRadius: 1,
             ),
           ],
         ),
@@ -417,6 +417,28 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
           color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(
+              color: Colors.black,
+              offset: Offset(2, 2),
+              blurRadius: 1,
+            ),
+            Shadow(
+              color: Colors.black,
+              offset: Offset(-2, -2),
+              blurRadius: 1,
+            ),
+            Shadow(
+              color: Colors.black,
+              offset: Offset(2, -2),
+              blurRadius: 1,
+            ),
+            Shadow(
+              color: Colors.black,
+              offset: Offset(-2, 2),
+              blurRadius: 1,
+            ),
+          ],
         ),
       ),
     );
@@ -437,9 +459,9 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
       ..style = PaintingStyle.fill;
     canvas.drawRRect(rrect, backgroundPaint);
     
-    // 白い枠線を描画（太く）
+    // 黒い枠線を描画（太く）
     final borderPaint = Paint()
-      ..color = Colors.white
+      ..color = Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.0;  // 2.0から4.0に太く
     canvas.drawRRect(rrect, borderPaint);
@@ -456,7 +478,7 @@ class CharacterButton extends RectangleComponent with TapCallbacks {
     
     // 円の枠線
     final circleStrokePaint = Paint()
-      ..color = Colors.white
+      ..color = Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
     canvas.drawCircle(
