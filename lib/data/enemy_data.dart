@@ -5,7 +5,7 @@ class EnemyData {
     return [
       Enemy(
         name: '小麦パン兵',
-        maxHp: 300,
+        maxHp: 80,
         attackPower: 10,
         speed: 30.0, // ゆっくり
         size: EnemySize.small,
@@ -13,7 +13,7 @@ class EnemyData {
       ),
       Enemy(
         name: 'ライ麦戦士',
-        maxHp: 120,
+        maxHp: 200,
         attackPower: 25,
         speed: 20.0, // 普通
         size: EnemySize.middle,

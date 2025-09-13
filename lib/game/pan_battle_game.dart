@@ -786,7 +786,7 @@ class SpawnedEnemyComponent extends SpriteComponent {
     required this.enemy,
     required Vector2 position,
   }) : super(
-    size: Vector2(60 * enemy.sizeMultiplier, 75 * enemy.sizeMultiplier), // 敵のサイズも少し大きく
+    size: Vector2(78 * enemy.sizeMultiplier, 75 * enemy.sizeMultiplier), // 敵の横幅を30%大きく（60 * 1.3 = 78）
     position: position,
     anchor: Anchor.bottomCenter, // 敵も下基準に
   );
