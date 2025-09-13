@@ -19,11 +19,73 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <!-- Force landscape orientation -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Mobile landscape orientation lock - more aggressive approach */
+    @media screen and (orientation: portrait) and (max-width: 767px) {
+      html {
+        transform: rotate(90deg);
+        transform-origin: center;
+        position: fixed;
+        width: 100vh;
+        height: 100vw;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        margin-left: calc((100vw - 100vh) / 2);
+        margin-top: calc((100vh - 100vw) / 2);
+      }
+
+      body {
+        width: 100vh;
+        height: 100vw;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      /* Flutter specific containers */
+      flt-renderer, flt-glass-pane, flutter-view {
+        width: 100% !important;
+        height: 100% !important;
+        transform: none !important;
+      }
+    }
+
+    /* Desktop and tablet adjustments */
+    @media screen and (min-width: 768px) {
+      body {
+        transform: none !important;
+        margin: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        position: static !important;
+      }
+    }
+
+    /* Flutter app container */
+    flt-glass-pane {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  </style>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="taro_pan">
+  <meta name="screen-orientation" content="landscape">
+  <meta name="apple-mobile-web-app-orientation" content="landscape">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
@@ -33,6 +95,362 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!-- Landscape orientation notice for mobile users -->
+  <div id="orientation-notice" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; text-align: center; z-index: 9999; font-family: sans-serif;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+      <h2>📱 画面を横向きにしてください</h2>
+      <p>このゲームは横向きでプレイしてください</p>
+      <div style="font-size: 48px; margin: 20px;">🔄</div>
+    </div>
+  </div>
+
+  <!-- Fullscreen/PWA button -->
+  <button id="fullscreen-btn" style="position: fixed; top: 10px; right: 10px; z-index: 10000; background: rgba(0,0,0,0.7); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+    🔍 フルスクリーン
+  </button>
+
+  <!-- Mobile PWA instructions -->
+  <div id="pwa-instructions" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; text-align: center; z-index: 10001; font-family: sans-serif; padding: 20px; box-sizing: border-box;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 320px;">
+      <h2 id="pwa-title">📱 フルスクリーンで楽しもう！</h2>
+      <div style="margin: 20px 0; font-size: 48px;" id="pwa-icon">📤</div>
+      <p id="pwa-description">アプリをホーム画面に追加してください</p>
+      <div id="pwa-steps" style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; font-size: 14px;">
+        <!-- Steps will be filled by JavaScript -->
+      </div>
+      <button onclick="closePWAInstructions()" style="margin-top: 20px; padding: 10px 20px; background: #007AFF; color: white; border: none; border-radius: 5px; font-size: 16px;">
+        閉じる
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Check orientation and show notice if needed
+    function checkOrientation() {
+      const notice = document.getElementById('orientation-notice');
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const isMobile = window.innerWidth < 768;
+
+      if (isPortrait && isMobile) {
+        // Portrait mode on mobile - show notice
+        notice.style.display = 'block';
+        // Force rotate the entire page
+        document.documentElement.style.transform = 'rotate(90deg)';
+        document.documentElement.style.transformOrigin = 'center';
+        document.documentElement.style.width = '100vh';
+        document.documentElement.style.height = '100vw';
+        document.documentElement.style.position = 'fixed';
+        document.documentElement.style.top = '0';
+        document.documentElement.style.left = '0';
+        document.documentElement.style.marginLeft = 'calc((100vw - 100vh) / 2)';
+        document.documentElement.style.marginTop = 'calc((100vh - 100vw) / 2)';
+      } else {
+        notice.style.display = 'none';
+        // Reset any transforms
+        document.documentElement.style.transform = 'none';
+        document.documentElement.style.width = '100vw';
+        document.documentElement.style.height = '100vh';
+        document.documentElement.style.position = 'static';
+        document.documentElement.style.margin = '0';
+      }
+    }
+
+    // Check on load and resize
+    window.addEventListener('load', checkOrientation);
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', function() {
+      setTimeout(checkOrientation, 100);
+    });
+
+    // Lock orientation if supported
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(function(error) {
+        console.log('Orientation lock not supported:', error);
+      });
+    }
+
+    // Detect device and browser
+    function getDeviceInfo() {
+      const userAgent = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+      const isAndroid = /Android/.test(userAgent);
+      const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+      const isChrome = /Chrome/.test(userAgent);
+      const isFirefox = /Firefox/.test(userAgent);
+      const isEdge = /Edge/.test(userAgent);
+
+      return {
+        isIOS,
+        isAndroid,
+        isSafari,
+        isChrome,
+        isFirefox,
+        isEdge,
+        isMobile: /Mobi|Android/i.test(userAgent)
+      };
+    }
+
+    function isStandalone() {
+      // iOS Safari PWA detection
+      if (window.navigator.standalone === true) {
+        return true;
+      }
+
+      // Standard PWA detection
+      if (window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: fullscreen)').matches) {
+        return true;
+      }
+
+      // Additional checks for various browsers
+      if (window.matchMedia('(display-mode: minimal-ui)').matches) {
+        return true;
+      }
+
+      // Check if launched from home screen (Android Chrome)
+      if (document.referrer === '' || document.referrer.includes('android-app://')) {
+        const device = getDeviceInfo();
+        if (device.isAndroid && device.isChrome) {
+          return true;
+        }
+      }
+
+      // Check URL parameters that might indicate PWA launch
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('standalone') || urlParams.has('pwa')) {
+        return true;
+      }
+
+      return false;
+    }
+
+    // Close PWA instructions
+    function closePWAInstructions() {
+      document.getElementById('pwa-instructions').style.display = 'none';
+    }
+
+    // Show appropriate PWA instructions
+    function showPWAInstructions() {
+      const device = getDeviceInfo();
+      const pwaInstructions = document.getElementById('pwa-instructions');
+      const titleEl = document.getElementById('pwa-title');
+      const iconEl = document.getElementById('pwa-icon');
+      const descriptionEl = document.getElementById('pwa-description');
+      const stepsEl = document.getElementById('pwa-steps');
+
+      let title, icon, description, steps;
+
+      if (device.isIOS && device.isSafari) {
+        // iPhone/iPad Safari
+        title = '📱 フルスクリーンで楽しもう！';
+        icon = '📤';
+        description = 'Safari の共有ボタンをタップして<br><strong>「ホーム画面に追加」</strong>を選択してください';
+        steps = `
+          <div style="margin-bottom: 10px;">1️⃣ 画面下部の 📤 をタップ</div>
+          <div style="margin-bottom: 10px;">2️⃣ 「ホーム画面に追加」をタップ</div>
+          <div>3️⃣ ホーム画面からゲームを起動</div>
+        `;
+      } else if (device.isIOS && device.isChrome) {
+        // iPhone/iPad Chrome
+        title = '📱 アプリとして追加！';
+        icon = '⚡';
+        description = 'Chrome のメニューから<br><strong>「ホーム画面に追加」</strong>を選択してください';
+        steps = `
+          <div style="margin-bottom: 10px;">1️⃣ 右上の ⋮ メニューをタップ</div>
+          <div style="margin-bottom: 10px;">2️⃣ 「ホーム画面に追加」をタップ</div>
+          <div style="margin-bottom: 10px;">3️⃣ 「インストール」をタップ</div>
+          <div>4️⃣ ホーム画面からアプリを起動</div>
+        `;
+      } else if (device.isAndroid && device.isChrome) {
+        // Android Chrome
+        title = '📱 アプリとして追加！';
+        icon = '⚡';
+        description = 'Chrome のメニューから<br><strong>「ホーム画面に追加」</strong>を選択してください';
+        steps = `
+          <div style="margin-bottom: 10px;">1️⃣ 右上の ⋮ メニューをタップ</div>
+          <div style="margin-bottom: 10px;">2️⃣ 「ホーム画面に追加」をタップ</div>
+          <div style="margin-bottom: 10px;">3️⃣ 「追加」をタップ</div>
+          <div>4️⃣ ホーム画面からアプリを起動</div>
+        `;
+      } else if (device.isAndroid && device.isFirefox) {
+        // Android Firefox
+        title = '📱 ホーム画面に追加！';
+        icon = '🦊';
+        description = 'Firefox のメニューから<br><strong>「ホーム画面に追加」</strong>を選択してください';
+        steps = `
+          <div style="margin-bottom: 10px;">1️⃣ 右上の ⋮ メニューをタップ</div>
+          <div style="margin-bottom: 10px;">2️⃣ 「ホーム画面に追加」をタップ</div>
+          <div>3️⃣ ホーム画面からアプリを起動</div>
+        `;
+      } else {
+        // その他のブラウザ
+        title = '📱 フルスクリーンモード';
+        icon = '🔍';
+        description = 'お使いのブラウザでは以下の方法をお試しください';
+        steps = `
+          <div style="margin-bottom: 10px;">💡 F11キーでフルスクリーン</div>
+          <div style="margin-bottom: 10px;">💡 ブラウザメニューの「全画面表示」</div>
+          <div>💡 「ホーム画面に追加」があれば選択</div>
+        `;
+      }
+
+      titleEl.textContent = title;
+      iconEl.textContent = icon;
+      descriptionEl.innerHTML = description;
+      stepsEl.innerHTML = steps;
+      pwaInstructions.style.display = 'block';
+    }
+
+    // Fullscreen functionality with cross-platform support
+    function toggleFullscreen() {
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+      const device = getDeviceInfo();
+
+      // Handle mobile devices specially
+      if (device.isMobile && !isStandalone()) {
+        showPWAInstructions();
+        return;
+      }
+
+      const element = document.documentElement;
+
+      function enterFullscreen() {
+        const request = element.requestFullscreen ||
+                       element.webkitRequestFullscreen ||
+                       element.mozRequestFullScreen ||
+                       element.msRequestFullscreen;
+
+        if (request) {
+          request.call(element).then(function() {
+            console.log('Entered fullscreen successfully');
+            fullscreenBtn.textContent = '❌ 終了';
+            fullscreenBtn.style.background = 'rgba(255,0,0,0.7)';
+
+            // Auto-hide button after 3 seconds
+            setTimeout(function() {
+              if (isInFullscreen()) {
+                fullscreenBtn.style.opacity = '0.3';
+              }
+            }, 3000);
+          }).catch(function(error) {
+            console.error('Fullscreen error:', error);
+            const device = getDeviceInfo();
+            if (device.isMobile) {
+              showPWAInstructions();
+            }
+          });
+        } else {
+          const device = getDeviceInfo();
+          if (device.isMobile) {
+            showPWAInstructions();
+          } else {
+            alert('このブラウザはフルスクリーンをサポートしていません');
+          }
+        }
+      }
+
+      function exitFullscreen() {
+        const exit = document.exitFullscreen ||
+                    document.webkitExitFullscreen ||
+                    document.mozCancelFullScreen ||
+                    document.msExitFullscreen;
+
+        if (exit) {
+          exit.call(document).then(function() {
+            console.log('Exited fullscreen successfully');
+            fullscreenBtn.textContent = '🔍 フルスクリーン';
+            fullscreenBtn.style.background = 'rgba(0,0,0,0.7)';
+            fullscreenBtn.style.opacity = '1';
+          });
+        }
+      }
+
+      function isInFullscreen() {
+        return document.fullscreenElement ||
+               document.webkitFullscreenElement ||
+               document.mozFullScreenElement ||
+               document.msFullscreenElement;
+      }
+
+      if (!isInFullscreen()) {
+        enterFullscreen();
+      } else {
+        exitFullscreen();
+      }
+    }
+
+    // Fullscreen button click handler
+    document.getElementById('fullscreen-btn').addEventListener('click', function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      console.log('Fullscreen button clicked');
+      toggleFullscreen();
+    });
+
+    // Handle fullscreen change events (cross-browser)
+    function handleFullscreenChange() {
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+      const isFullscreen = document.fullscreenElement ||
+                          document.webkitFullscreenElement ||
+                          document.mozFullScreenElement ||
+                          document.msFullscreenElement;
+
+      if (isFullscreen) {
+        fullscreenBtn.textContent = '❌ 終了';
+        fullscreenBtn.style.background = 'rgba(255,0,0,0.7)';
+        console.log('Fullscreen activated');
+      } else {
+        fullscreenBtn.textContent = '🔍 フルスクリーン';
+        fullscreenBtn.style.background = 'rgba(0,0,0,0.7)';
+        fullscreenBtn.style.opacity = '1';
+        console.log('Fullscreen deactivated');
+      }
+    }
+
+    // Listen to all fullscreen change events
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    // Show button on mouse move in fullscreen
+    document.addEventListener('mousemove', function() {
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+      const isFullscreen = document.fullscreenElement ||
+                          document.webkitFullscreenElement ||
+                          document.mozFullScreenElement ||
+                          document.msFullscreenElement;
+      if (isFullscreen) {
+        fullscreenBtn.style.opacity = '1';
+      }
+    });
+
+    // Hide fullscreen button if already in standalone mode (PWA)
+    function checkAndHideFullscreenButton() {
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+      if (isStandalone()) {
+        console.log('PWA mode detected - hiding fullscreen button');
+        fullscreenBtn.style.display = 'none';
+      } else {
+        console.log('Browser mode detected - showing fullscreen button');
+        fullscreenBtn.style.display = 'block';
+      }
+    }
+
+    // Check on page load
+    window.addEventListener('load', checkAndHideFullscreenButton);
+
+    // Check periodically in case PWA state changes
+    setInterval(checkAndHideFullscreenButton, 1000);
+
+    // Check on visibility change (when app is restored)
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        setTimeout(checkAndHideFullscreenButton, 100);
+      }
+    });
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
