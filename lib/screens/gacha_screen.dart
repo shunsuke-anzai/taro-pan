@@ -192,7 +192,11 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                         children: [
                           currentResult == null 
                               ? _buildGachaStandby()
-                              : _buildGachaResult(),
+                              : Positioned.fill(
+                                  child: Center(
+                                    child: _buildGachaResult(),
+                                  ),
+                                ),
                           
                           // レベルアップエフェクト
                           if (showLevelUpEffect)
@@ -346,11 +350,13 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
     return AnimatedBuilder(
       animation: _cardAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _cardAnimation.value,
-          child: Opacity(
-            opacity: _cardAnimation.value,
-            child: _buildSinglePullResult(),
+        return Center(
+          child: Transform.scale(
+            scale: _cardAnimation.value,
+            child: Opacity(
+              opacity: _cardAnimation.value,
+              child: _buildSinglePullResult(),
+            ),
           ),
         );
       },
@@ -386,6 +392,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   item.rarity.displayName,
@@ -394,6 +401,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Container(
@@ -415,34 +423,22 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 // キャラクターの場合はレベル情報を表示
                 if (item.character != null) ...[
-                  CharacterLevelWidget(
-                    characterName: item.character!.name,
-                    isCompact: true,
-                    width: 120,
-                    height: 24,
-                    animateProgress: true, // アニメーション有効
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      item.description,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                  Center(
+                    child: CharacterLevelWidget(
+                      characterName: item.character!.name,
+                      isCompact: true,
+                      width: 120,
+                      height: 24,
+                      animateProgress: true, // アニメーション有効
                     ),
                   ),
-                ),
+                  const SizedBox(height: 16), // スペースを少し増加
+                ],
               ],
             ),
             // New ラベル

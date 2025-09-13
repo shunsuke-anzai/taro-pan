@@ -612,7 +612,7 @@ class _CharaList2State extends State<CharaList2> {
                               ),
                             ),
                             Expanded(
-                              flex: 1,
+                              flex: 2, // 右側を広くして説明文のスペースを確保
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.black.withOpacity(0.7),
@@ -647,15 +647,15 @@ class _CharaList2State extends State<CharaList2> {
                                         ),
                                         const SizedBox(height: 15),
                                       ],
-                                      Flexible(
+                                      Expanded( // Flexibleの代わりにExpandedを使用
                                         child: Text(
                                           _isCharacterObtained(character.name) ? description : "???",
                                           style: const TextStyle(
-                                            fontSize: 18, // フォントサイズを少し縮小
+                                            fontSize: 16, // フォントサイズをさらに調整
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                           ),
-                                          maxLines: 4, // 最大4行に制限
+                                          maxLines: 6, // 最大行数を増加
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),

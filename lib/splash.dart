@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
             color: Colors.black,
             child: const Center(
               child: Text(
-                'ANZAI',
+                'TARO-PAN',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 64,
