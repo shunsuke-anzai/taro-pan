@@ -20,9 +20,8 @@ class BGMService {
       await _bgmPlayer!.setReleaseMode(ReleaseMode.loop);
       await _bgmPlayer!.play(AssetSource(_bgmPath));
       _isPlaying = true;
-      print('BGM開始: $_bgmPath');
     } catch (e) {
-      print('BGM再生エラー: $e');
+      // エラーは無視
     }
   }
 

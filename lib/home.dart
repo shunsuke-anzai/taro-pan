@@ -32,19 +32,16 @@ class _HomeScreenState extends State<HomeScreen> {
     
     _controller = rive.SimpleAnimation('Timeline 1');
     _controller.isActiveChanged.addListener(_onIntroActiveChanged);
-    
-    // BGMは最初のユーザーインタラクション時に開始
   }
   
   void _onIntroActiveChanged() {
     if (!_controller.isActive) {
-      // イントロアニメーション終了時の処理（BGM開始は削除）
+      // イントロアニメーション終了
     }
   }
 
   Future<void> _playBGM() async {
     if (!_bgmStarted) {
-      print('ホーム画面でBGM再生を開始します');
       await BGMService().playBGM();
       _bgmStarted = true;
     }

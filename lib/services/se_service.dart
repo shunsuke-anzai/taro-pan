@@ -9,7 +9,7 @@ class SEService {
         sePlayer.dispose();
       });
     } catch (e) {
-      print('SE再生エラー: $e');
+      // エラーは無視
     }
   }
 
@@ -21,7 +21,7 @@ class SEService {
         sePlayer.dispose();
       });
     } catch (e) {
-      print('ガチャ開始SE再生エラー: $e');
+      // エラーは無視
     }
   }
 
@@ -33,7 +33,7 @@ class SEService {
         sePlayer.dispose();
       });
     } catch (e) {
-      print('ガチャ結果SE再生エラー: $e');
+      // エラーは無視
     }
   }
 }
