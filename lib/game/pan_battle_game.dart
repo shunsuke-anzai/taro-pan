@@ -98,7 +98,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
     playerCastle = CastleComponent(
       spritePath: 'kama.png',
       castleSize: Vector2(178, 129), // 正方形にして元画像の比率を保持
-      castlePosition: Vector2(20, 100),
+      castlePosition: Vector2(20, 125),
       isPlayerCastle: true,
     );
     add(playerCastle);
@@ -109,8 +109,8 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   Future<void> _addEnemyCastle() async {
     enemyCastle = CastleComponent(
       spritePath: 'enemyCastle.png',
-      castleSize: Vector2(200, 250),
-      castlePosition: Vector2(gameWidth - 220, 50),
+      castleSize: Vector2(178, 129),
+      castlePosition: Vector2(gameWidth - 220, 125),
       isPlayerCastle: false,
     );
     add(enemyCastle);
@@ -325,9 +325,24 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
       yeastPower -= character.powerCost;
       _updateYeastPowerDisplay();
       
+      // キャラクターのHPをリセット（新しいインスタンスを作成）
+      final deployedCharacter = Character(
+        name: character.name,
+        maxHp: character.maxHp,
+        attackPower: character.attackPower,
+        powerCost: character.powerCost,
+        description: character.description,
+        imagePath: character.imagePath,
+        walkAnimationPath: character.walkAnimationPath,
+        attackAnimationPath: character.attackAnimationPath,
+        isAreaAttack: character.isAreaAttack,
+        attackRange: character.attackRange,
+        rarity: character.rarity,
+      );
+      
       // キャラクターを配置 - 全て同じY座標（横列）
       final deployedChar = DeployedCharacterComponent(
-        character: character,
+        character: deployedCharacter,
         position: Vector2(170, 220), // Y座標をさらに低く調整
       );
       add(deployedChar);
@@ -771,7 +786,7 @@ class SpawnedEnemyComponent extends SpriteComponent {
     required this.enemy,
     required Vector2 position,
   }) : super(
-    size: Vector2(60, 75), // 敵のサイズも少し大きく
+    size: Vector2(60 * enemy.sizeMultiplier, 75 * enemy.sizeMultiplier), // 敵のサイズも少し大きく
     position: position,
     anchor: Anchor.bottomCenter, // 敵も下基準に
   );

@@ -29,11 +29,11 @@ class Enemy {
   double get sizeMultiplier {
     switch (size) {
       case EnemySize.small:
-        return 0.8;
+        return 0.6;
       case EnemySize.middle:
         return 1.0;
       case EnemySize.big:
-        return 1.4;
+        return 1.8;
     }
   }
 }

@@ -5,10 +5,10 @@ class GameData {
     return [
       Character(
         name: 'ぷくらん',
-        maxHp: 500,
-        attackPower: 50,
-        powerCost: 30, // 10 × 3 = 30
-        description: '基本的なパン戦士。バランスの取れた能力を持つ。',
+        maxHp: 60,
+        attackPower: 20,
+        powerCost: 20, // 10 × 3 = 30
+        description: '発酵前の生地でプニプニしている。かわいい。かわいい。',
         imagePath: 'pukuran.png',
         walkAnimationPath: 'assets/animations/walk_pukuran.riv',
         attackAnimationPath: 'assets/animations/attack_pukuran.riv',
@@ -19,7 +19,7 @@ class GameData {
         maxHp: 150,
         attackPower: 35,
         powerCost: 60, // 25 × 3 = 75
-        description: 'サクサクの装甲を持つ騎士。高い攻撃力が自慢。',
+        description: 'カチカチの装甲を持つ騎士。ジャンプして頭突きを繰り出す。',
         imagePath: 'buggeton.png',
         walkAnimationPath: 'assets/animations/walk_buggeton.riv',
         attackAnimationPath: 'assets/animations/attack_buggeton.riv',
@@ -29,8 +29,8 @@ class GameData {
         name: 'クレッシェン',
         maxHp: 80,
         attackPower: 45,
-        powerCost: 75, // 30 × 3 = 90
-        description: '甘い魔法を使う魔術師。高火力だが脆い。',
+        powerCost: 70,
+        description: 'クロワッサンの語源は三日月。ミニクロワッサンを投げる遠距離攻撃。',
         imagePath: 'kuresshen.png',
         walkAnimationPath: 'assets/animations/walk_kuresshen.riv',
         attackAnimationPath: 'assets/animations/attack_kuresshen.riv',
@@ -40,10 +40,10 @@ class GameData {
       ),
       Character(
         name: 'あんまる',
-        maxHp: 120,
-        attackPower: 25,
-        powerCost: 45, // 15 × 3 = 45
-        description: '長いリーチを持つ槍兵。バランスの良い戦士。',
+        maxHp: 100,
+        attackPower: 40,
+        powerCost: 45,
+        description: '手に持っためん棒をふりかざす。バランスの良い戦士。',
         imagePath: 'anmaru.png',
         walkAnimationPath: 'assets/animations/walk_anmaru.riv',
         attackAnimationPath: 'assets/animations/attack_anmaru.riv',
@@ -51,9 +51,9 @@ class GameData {
       ),
       Character(
         name: 'ダブルトングマン',
-        maxHp: 90,
-        attackPower: 30,
-        powerCost: 90, // 30 × 3 = 90
+        maxHp: 200,
+        attackPower: 60,
+        powerCost: 90,
         description: '素早い動きで敵を翻弄する忍者。',
         imagePath: 'doubletongman.png',
         walkAnimationPath: 'assets/animations/walk_doubletongman.riv',
