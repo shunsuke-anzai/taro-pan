@@ -50,7 +50,7 @@ class GachaService {
     }
     
     // フォールバック（通常は到達しない）
-    return _getRandomItemByRarity(Rarity.star1);
+    return _getRandomItemByRarity(Rarity.star3);
   }
 
   static GachaItem _pullGuaranteedRareItem() {

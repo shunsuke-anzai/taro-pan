@@ -7,18 +7,16 @@ class GachaData {
     final characters = GameData.getAllCharacters();
     
     return [
-      // ★5キャラクター
+      // ★4キャラクター
       GachaItem(
-        id: 'char_5_kuresien',
+        id: 'char_4_kuresien',
         name: 'クレッシェン',
         description: '甘い魔法を使う魔術師。高火力だが脆い。',
         imagePath: 'assets/images/kuresien.png',
-        rarity: Rarity.star5,
+        rarity: Rarity.star4,
         type: ItemType.character,
         character: characters[2], // クレッシェン
       ),
-      
-      // ★4キャラクター
       GachaItem(
         id: 'char_4_bageton',
         name: 'バゲットン',
@@ -37,6 +35,8 @@ class GachaData {
         type: ItemType.character,
         character: characters[3], // あんまる
       ),
+      
+      // ★5キャラクター
       GachaItem(
         id: 'char_5_doubletongman',
         name: 'ダブルトングマン',
@@ -85,11 +85,11 @@ class GachaData {
         character: characters[7], // カティ
       ),
       GachaItem(
-        id: 'char_3_sand',
+        id: 'char_4_sand',
         name: 'サンド',
         description: '砂を操る大地の守護者。高い防御力を誇る。',
         imagePath: 'assets/images/sand.png',
-        rarity: Rarity.star3,
+        rarity: Rarity.star4,
         type: ItemType.character,
         character: characters[8], // サンド
       ),

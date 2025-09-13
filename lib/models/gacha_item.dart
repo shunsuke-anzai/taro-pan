@@ -37,15 +37,15 @@ extension RarityExtension on Rarity {
   double get dropRate {
     switch (this) {
       case Rarity.star1:
-        return 0.30;
+        return 0.0; // 存在しないため0%
       case Rarity.star2:
-        return 0.35;
+        return 0.0; // 存在しないため0%
       case Rarity.star3:
-        return 0.25;
+        return 0.85; // 85% - 最も出やすい（基本キャラ）
       case Rarity.star4:
-        return 0.08;
+        return 0.13; // 13% - レア（強いキャラ）
       case Rarity.star5:
-        return 0.02;
+        return 0.02; // 2% - 超レア（最強キャラ）
     }
   }
 }

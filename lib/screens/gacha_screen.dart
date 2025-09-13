@@ -16,7 +16,9 @@ class GachaScreen extends StatefulWidget {
 class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin {
   late AnimationController _cardAnimationController;
   late AnimationController _buttonAnimationController;
+  late AnimationController _sparkleAnimationController;
   late Animation<double> _cardAnimation;
+  late Animation<double> _sparkleAnimation;
   
   UserProgress userProgress = UserProgress();
   GachaResult? currentResult;
@@ -41,11 +43,24 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
       vsync: this,
     );
     
+    _sparkleAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    
     _cardAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _cardAnimationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    _sparkleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.3,
+    ).animate(CurvedAnimation(
+      parent: _sparkleAnimationController,
       curve: Curves.easeInOut,
     ));
   }
@@ -54,6 +69,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   void dispose() {
     _cardAnimationController.dispose();
     _buttonAnimationController.dispose();
+    _sparkleAnimationController.dispose();
     super.dispose();
   }
 
@@ -65,6 +81,9 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
     HapticFeedback.mediumImpact();
     setState(() => isAnimating = true);
     
+    // キラキラアニメーションを開始（ガチャを引いている間）
+    _sparkleAnimationController.repeat(reverse: true);
+    
     _buttonAnimationController.forward().then((_) {
       _buttonAnimationController.reverse();
     });
@@ -74,6 +93,10 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
 
     final result = GachaService.pullSingle();
     _processGachaResult(result);
+    
+    // キラキラアニメーションを停止
+    _sparkleAnimationController.stop();
+    _sparkleAnimationController.reset();
     
     _cardAnimationController.forward();
     
@@ -139,7 +162,85 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
       showRetryButton = false;
       showLevelUpEffect = false;
       _cardAnimationController.reset();
+      _sparkleAnimationController.reset();
     });
+  }
+
+  void _showProbabilityDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.black.withOpacity(0.9),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '排出確率',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildProbabilityRow('★★★★★', Rarity.star5, '2.0%'),
+                _buildProbabilityRow('★★★★☆', Rarity.star4, '13.0%'),
+                _buildProbabilityRow('★★★☆☆', Rarity.star3, '85.0%'),
+                const SizedBox(height: 20),
+                const Text(
+                  '※ 各レアリティ内でキャラクターは等確率',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('閉じる'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProbabilityRow(String stars, Rarity rarity, String percentage) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            stars,
+            style: TextStyle(
+              color: _getRarityColor(rarity),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            percentage,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Color _getRarityColor(Rarity rarity) {
@@ -282,7 +383,15 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(width: 40),
+          IconButton(
+            onPressed: _showProbabilityDialog,
+            icon: const Icon(
+              Icons.info_outline,
+              color: Colors.white,
+              size: 24,
+            ),
+            tooltip: '確率表示',
+          ),
         ],
       ),
     );
@@ -307,10 +416,18 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                   ],
                 ),
               ),
-              child: const Icon(
-                Icons.auto_awesome,
-                size: 80,
-                color: Colors.white,
+              child: AnimatedBuilder(
+                animation: _sparkleAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: isAnimating ? _sparkleAnimation.value : 1.0,
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      size: 80,
+                      color: Colors.white,
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 32),
