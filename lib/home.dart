@@ -210,20 +210,10 @@ class _CharaListState extends State<CharaList> {
     });
   }
 
-  final characters = const [
-    {"name": "ぷくらん", "image": "assets/images/pukuran.png", "index": 0, "rarity": 3},
-    {"name": "バゲットン", "image": "assets/images/bageton.png", "index": 1, "rarity": 4},
-    {"name": "クレッシェン", "image": "assets/images/kuresien.png", "index": 2, "rarity": 5},
-    {"name": "あんまる", "image": "assets/images/anmaru.png", "index": 3, "rarity": 4},
-    {"name": "ダブルトングマン", "image": "assets/images/panda.png", "index": 4, "rarity": 4},
-    {"name": "チョコ", "image": "assets/images/choko_mask.png", "index": 5, "rarity": 3},
-    {"name": "カニ", "image": "assets/images/kani_mask.png", "index": 6, "rarity": 3},
-    {"name": "カティ", "image": "assets/images/kati_mask.png", "index": 7, "rarity": 4},
-    {"name": "サンド", "image": "assets/images/sand_mask.png", "index": 8, "rarity": 3},
-    {"name": "ショク", "image": "assets/images/shoku_mask.png", "index": 9, "rarity": 4},
-  ];
   @override
   Widget build(BuildContext context) {
+    final characters = GameData.getAllCharacters();
+    
     return Scaffold(
       body: Stack(
         children: [
@@ -239,16 +229,15 @@ class _CharaListState extends State<CharaList> {
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: GridView.count(
-              crossAxisCount: 4,
+              crossAxisCount: 3,
               mainAxisSpacing: 24,
               crossAxisSpacing: 24,
               childAspectRatio: 1,
-              children: characters.map((chara) {
-                final characterName = chara["name"] as String;
-                final isObtained = _isCharacterObtained(characterName);
-                final index = chara["index"] as int;
+              children: characters.asMap().entries.map((entry) {
+                final index = entry.key;
+                final character = entry.value;
                 return GestureDetector(
-                  onTap: isObtained ? () {
+                  onTap: _isCharacterObtained(character.name) ? () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -258,85 +247,95 @@ class _CharaListState extends State<CharaList> {
                   } : null,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: _getRarityCardColor(chara["rarity"] as int),
+                      color: _getRarityCardColor(character.rarity),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: _getRarityBorderColor(chara["rarity"] as int).withOpacity(0.5),
+                          color: _getRarityBorderColor(character.rarity).withOpacity(0.5),
                           blurRadius: 8,
                           offset: Offset(2, 2),
                         ),
                       ],
                       border: Border.all(
-                        color: _getRarityBorderColor(chara["rarity"] as int),
+                        color: _getRarityBorderColor(character.rarity),
                         width: 2,
                       ),
                     ),
                     child: Stack(
                       children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: Image.asset(
-                                  _getCharacterImage(chara["name"] as String, chara["image"] as String),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.white.withOpacity(0.9),
-                                    Colors.white.withOpacity(0.7),
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Center(
+                                  child: Image.asset(
+                                    'assets/images/${_getCharacterDisplayImage(character)}',
+                                    fit: BoxFit.contain,
                                   ),
-                                ],
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
                                 ),
                               ),
-                              child: Text(
-                                _getDisplayName(chara["name"] as String),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.black87,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.white.withOpacity(0.8),
-                                      offset: const Offset(1, 1),
-                                      blurRadius: 2,
+                              const SizedBox(height: 8),
+                              Flexible(
+                                flex: 1,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.white.withOpacity(0.9),
+                                        Colors.white.withOpacity(0.7),
+                                      ],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
                                     ),
-                                  ],
-                                  letterSpacing: 0.5,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      _isCharacterObtained(character.name) ? character.name : "???",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black87,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.white.withOpacity(0.8),
+                                            offset: const Offset(1, 1),
+                                            blurRadius: 2,
+                                          ),
+                                        ],
+                                        letterSpacing: 0.5,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
+                            ],
+                          ),
                         ),
                         // 右上に星を表示
                         Positioned(
                           top: 8,
                           right: 8,
-                          child: _buildStarRating(chara["rarity"] as int),
+                          child: _buildStarRating(character.rarity),
                         ),
                       ],
                     ),
@@ -361,28 +360,12 @@ class _CharaListState extends State<CharaList> {
     );
   }
 
-  String _getCharacterImage(String characterName, String defaultImage) {
-    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
-    
-    if (newCharacters.contains(characterName)) {
-      if (obtainedCharacters.contains(characterName)) {
-        return defaultImage.replaceAll('_mask.png', '.png');
-      } else {
-        return defaultImage;
-      }
+  String _getCharacterDisplayImage(character) {
+    if (_isCharacterObtained(character.name)) {
+      return character.imagePath;
+    } else {
+      return character.lockedImagePath ?? character.imagePath;
     }
-    
-    return defaultImage;
-  }
-  
-  String _getDisplayName(String characterName) {
-    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
-    
-    if (newCharacters.contains(characterName) && !obtainedCharacters.contains(characterName)) {
-      return '???';
-    }
-    
-    return characterName;
   }
   
   Color _getRarityCardColor(int rarity) {
@@ -424,15 +407,6 @@ class _CharaListState extends State<CharaList> {
     );
   }
   
-  String _getDisplayNameDetailed(String characterName) {
-    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
-    
-    if (newCharacters.contains(characterName) && !obtainedCharacters.contains(characterName)) {
-      return '???';
-    }
-    
-    return characterName;
-  }
   
   bool _isCharacterObtained(String characterName) {
     final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
@@ -472,99 +446,42 @@ class _CharaList2State extends State<CharaList2> {
     });
   }
 
-  final characters = [
-    {"name": "ぷくらん", 
-    "image": "assets/images/pukuran.png",
-    "description": "HP: 100\n攻撃力: 20\n消費パワー: 10\n基本的なパン戦士。バランスの取れた能力を持つ。",
-    "rarity": 3
-    },
-    {"name": "バゲットン", 
-    "image": "assets/images/bageton.png",
-    "description": "HP: 120\n攻撃力: 25\n消費パワー: 12\n素早い動きで相手を翻弄するパン戦士。",
-    "rarity": 4
-    },
-    {"name": "クレッシェン", 
-    "image": "assets/images/kuresien.png",
-    "description": "HP: 110\n攻撃力: 22\n消費パワー: 11\n特殊な技を持つパン戦士。",
-    "rarity": 5
-    },
-    {"name": "あんまる", 
-    "image": "assets/images/anmaru.png",
-    "description": "HP: 130\n攻撃力: 30\n消費パワー: 15\n防御力が高く、耐久性に優れたパン戦士。",
-    "rarity": 4
-    },
-    {"name": "ダブルトングマン", 
-    "image": "assets/images/panda.png",
-    "description": "HP: 140\n攻撃力: 35\n消費パワー: 20\n二つのトングを使いこなすパン戦士。",
-    "rarity": 4
-    },
-    {"name": "チョコ", 
-    "image": "assets/images/choko.png",
-    "description": "HP: 110\n攻撃力: 28\n消費パワー: 50\n甘い香りで敵を魅了するチョコレート戦士。",
-    "rarity": 3
-    },
-    {"name": "カニ", 
-    "image": "assets/images/kani.png",
-    "description": "HP: 130\n攻撃力: 32\n消費パワー: 70\nハサミで敵を挟み撃ちする甲殻類の戦士。",
-    "rarity": 3
-    },
-    {"name": "カティ", 
-    "image": "assets/images/kati.png",
-    "description": "HP: 95\n攻撃力: 38\n消費パワー: 80\n鋭い爪を持つ俊敏な猫の戦士。",
-    "rarity": 4
-    },
-    {"name": "サンド", 
-    "image": "assets/images/sand.png",
-    "description": "HP: 140\n攻撃力: 22\n消費パワー: 55\n砂を操る大地の守護者。高い防御力を誇る。",
-    "rarity": 3
-    },
-    {"name": "ショク", 
-    "image": "assets/images/shoku.png",
-    "description": "HP: 105\n攻撃力: 40\n消費パワー: 85\n植物の力を借りて戦う自然の戦士。",
-    "rarity": 4
-    },
-  ];
 
 
   void _previousPage() {
+    final characters = GameData.getAllCharacters();
     final currentPage = _pageController.page!.round();
-    if (currentPage > 0) {
-      final targetPage = currentPage - 1;
-      final targetCharacterName = characters[targetPage]["name"] as String;
-      
-      if (_isCharacterObtained(targetCharacterName)) {
-        _pageController.previousPage(
+    
+    // 現在のページより前の解放済みキャラクターを探す
+    for (int i = currentPage - 1; i >= 0; i--) {
+      if (_isCharacterObtained(characters[i].name)) {
+        _pageController.animateToPage(
+          i,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
+        break;
       }
     }
   }
 
   void _nextPage() {
+    final characters = GameData.getAllCharacters();
     final currentPage = _pageController.page!.round();
-    if (currentPage < characters.length - 1) {
-      final targetPage = currentPage + 1;
-      final targetCharacterName = characters[targetPage]["name"] as String;
-      
-      if (_isCharacterObtained(targetCharacterName)) {
-        _pageController.nextPage(
+    
+    // 現在のページより後の解放済みキャラクターを探す
+    for (int i = currentPage + 1; i < characters.length; i++) {
+      if (_isCharacterObtained(characters[i].name)) {
+        _pageController.animateToPage(
+          i,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
+        break;
       }
     }
   }
   
-  String _getDisplayNameDetailed(String characterName) {
-    final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
-    
-    if (newCharacters.contains(characterName) && !obtainedCharacters.contains(characterName)) {
-      return '???';
-    }
-    
-    return characterName;
-  }
   
   bool _isCharacterObtained(String characterName) {
     final newCharacters = ['チョコ', 'カニ', 'カティ', 'サンド', 'ショク'];
@@ -575,6 +492,14 @@ class _CharaList2State extends State<CharaList2> {
     
     // 既存キャラクターは常に取得済み扱い
     return true;
+  }
+
+  String _getCharacterDisplayImage(character) {
+    if (_isCharacterObtained(character.name)) {
+      return character.imagePath;
+    } else {
+      return character.lockedImagePath ?? character.imagePath;
+    }
   }
 
   Color _getRarityCardColorDetailed(int rarity) {
@@ -618,6 +543,8 @@ class _CharaList2State extends State<CharaList2> {
 
   @override
   Widget build(BuildContext context) {
+    final characters = GameData.getAllCharacters();
+    
     return Scaffold(
       body: Stack(
         children: [
@@ -634,9 +561,11 @@ class _CharaList2State extends State<CharaList2> {
             controller: _pageController,
             itemCount: characters.length,
             itemBuilder: (context, index) {
-              final chara = characters[index];
+              final character = characters[index];
               final screenWidth = MediaQuery.of(context).size.width;
               final screenHeight = MediaQuery.of(context).size.height;
+              final description = 'HP: ${character.maxHp}\n攻撃力: ${character.attackPower}\n消費パワー: ${character.powerCost}\n${character.description}';
+              
               return SizedBox.expand(
                 child: Container(
                   width: screenWidth,
@@ -644,15 +573,15 @@ class _CharaList2State extends State<CharaList2> {
                   padding: const EdgeInsets.all(20),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: _getRarityCardColorDetailed(chara["rarity"] as int),
+                      color: _getRarityCardColorDetailed(character.rarity),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: _getRarityBorderColorDetailed(chara["rarity"] as int),
+                        color: _getRarityBorderColorDetailed(character.rarity),
                         width: 3,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: _getRarityBorderColorDetailed(chara["rarity"] as int).withOpacity(0.3),
+                          color: _getRarityBorderColorDetailed(character.rarity).withOpacity(0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -667,7 +596,7 @@ class _CharaList2State extends State<CharaList2> {
                               child: Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: Image.asset(
-                                  chara["image"] as String,
+                                  'assets/images/${_getCharacterDisplayImage(character)}',
                                   fit: BoxFit.contain,
                                 ),
                               ),
@@ -676,7 +605,7 @@ class _CharaList2State extends State<CharaList2> {
                               flex: 1,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.7),
+                                  color: Colors.black.withOpacity(0.7),
                                   borderRadius: const BorderRadius.only(
                                     topRight: Radius.circular(17),
                                     bottomRight: Radius.circular(17),
@@ -689,7 +618,7 @@ class _CharaList2State extends State<CharaList2> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        _getDisplayNameDetailed(chara["name"] as String),
+                                        _isCharacterObtained(character.name) ? character.name : "???",
                                         style: const TextStyle(
                                           fontSize: 32,
                                           fontWeight: FontWeight.bold,
@@ -698,7 +627,7 @@ class _CharaList2State extends State<CharaList2> {
                                       ),
                                       const SizedBox(height: 20),
                                       Text(
-                                        chara["description"] as String,
+                                        _isCharacterObtained(character.name) ? description : "???",
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -716,7 +645,7 @@ class _CharaList2State extends State<CharaList2> {
                         Positioned(
                           top: 15,
                           right: 15,
-                          child: _buildStarRatingDetailed(chara["rarity"] as int),
+                          child: _buildStarRatingDetailed(character.rarity),
                         ),
                       ],
                     ),

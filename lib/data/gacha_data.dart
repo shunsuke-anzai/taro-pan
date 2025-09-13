@@ -38,11 +38,11 @@ class GachaData {
         character: characters[3], // あんまる
       ),
       GachaItem(
-        id: 'char_4_doubletongman',
+        id: 'char_5_doubletongman',
         name: 'ダブルトングマン',
         description: '素早い動きで敵を翻弄する忍者。',
         imagePath: 'assets/images/panda.png',
-        rarity: Rarity.star4,
+        rarity: Rarity.star5,
         type: ItemType.character,
         character: characters[4], // ダブルトングマン
       ),
@@ -94,11 +94,11 @@ class GachaData {
         character: characters[8], // サンド
       ),
       GachaItem(
-        id: 'char_4_shoku',
+        id: 'char_5_shoku',
         name: 'ショク',
         description: '植物の力を借りて戦う自然の戦士。',
         imagePath: 'assets/images/shoku.png',
-        rarity: Rarity.star4,
+        rarity: Rarity.star5,
         type: ItemType.character,
         character: characters[9], // ショク
       ),

@@ -12,6 +12,7 @@ class GameData {
         imagePath: 'pukuran.png',
         walkAnimationPath: 'assets/animations/walk_pukuran.riv',
         attackAnimationPath: 'assets/animations/attack_pukuran.riv',
+        rarity: 3,
       ),
       Character(
         name: 'バゲットン',
@@ -22,6 +23,7 @@ class GameData {
         imagePath: 'buggeton.png',
         walkAnimationPath: 'assets/animations/walk_buggeton.riv',
         attackAnimationPath: 'assets/animations/attack_buggeton.riv',
+        rarity: 4,
       ),
       Character(
         name: 'クレッシェン',
@@ -34,6 +36,7 @@ class GameData {
         attackAnimationPath: 'assets/animations/attack_kuresshen.riv',
         isAreaAttack: true, // 範囲攻撃
         attackRange: 175.0, // 範囲攻撃の範囲（175px）
+        rarity: 4,
       ),
       Character(
         name: 'あんまる',
@@ -44,6 +47,7 @@ class GameData {
         imagePath: 'anmaru.png',
         walkAnimationPath: 'assets/animations/walk_anmaru.riv',
         attackAnimationPath: 'assets/animations/attack_anmaru.riv',
+        rarity: 4,
       ),
       Character(
         name: 'ダブルトングマン',
@@ -54,66 +58,7 @@ class GameData {
         imagePath: 'doubletongman.png',
         walkAnimationPath: 'assets/animations/walk_doubletongman.riv',
         attackAnimationPath: 'assets/animations/attack_doubletongman.riv',
-      ),
-      Character(
-        name: 'チョコホ',
-        maxHp: 95,
-        attackPower: 38,
-        powerCost: 51, // 17 × 3 = 51
-        description: 'チョコレートの甘い香りを漂わせるパン戦士。',
-        imagePath: 'choko.png',
-        lockedImagePath: 'kuro_choko.png',
-        walkAnimationPath: 'assets/animations/walk_kuro_choko.riv',
-        attackAnimationPath: 'assets/animations/attack_kuro_choko.riv',
-        isUnlocked: false, // アンロックフラグ
-      ),
-      Character(
-        name: 'クラブン',
-        maxHp: 85,
-        attackPower: 42,
-        powerCost: 57, // 19 × 3 = 57
-        description: 'カニのようなハサミで敵を挟むパン戦士。',
-        imagePath: 'kani.png',
-        lockedImagePath: 'kuro_kani.png',
-        walkAnimationPath: 'assets/animations/walk_kuro_kani.riv',
-        attackAnimationPath: 'assets/animations/attack_kuro_kani.riv',
-        isUnlocked: false, // アンロックフラグ
-      ),
-      Character(
-        name: 'カティ',
-        maxHp: 110,
-        attackPower: 35,
-        powerCost: 48, // 16 × 3 = 48
-        description: 'カティな形状で素早い動きをするパン戦士。',
-        imagePath: 'kati.png',
-        lockedImagePath: 'kuro_kati.png',
-        walkAnimationPath: 'assets/animations/walk_kuro_kati.riv',
-        attackAnimationPath: 'assets/animations/attack_kuro_kati.riv',
-        isUnlocked: false, // アンロックフラグ
-      ),
-      Character(
-        name: 'サンドパン',
-        maxHp: 100,
-        attackPower: 36,
-        powerCost: 54, // 18 × 3 = 54
-        description: 'サンドイッチのように層になったパン戦士。',
-        imagePath: 'sand.png',
-        lockedImagePath: 'kuro_sand.png',
-        walkAnimationPath: 'assets/animations/walk_kuro_sand.riv',
-        attackAnimationPath: 'assets/animations/attack_kuro_sand.riv',
-        isUnlocked: false, // アンロックフラグ
-      ),
-      Character(
-        name: 'ショク',
-        maxHp: 120,
-        attackPower: 45,
-        powerCost: 60, // 20 × 3 = 60
-        description: '食べ物の力でパワーアップするパン戦士。',
-        imagePath: 'shoku.png',
-        lockedImagePath: 'kuro_shoku.png',
-        walkAnimationPath: 'assets/animations/walk_kuro_shoku.riv',
-        attackAnimationPath: 'assets/animations/attack_kuro_shoku.riv',
-        isUnlocked: false, // アンロックフラグ
+        rarity: 5,
       ),
       Character(
         name: 'チョコ',
@@ -122,8 +67,11 @@ class GameData {
         powerCost: 50,
         description: '甘い香りで敵を魅了するチョコレート戦士。',
         imagePath: 'choko.png',
+        lockedImagePath: 'kuro_choko.png',
         walkAnimationPath: 'assets/animations/walk_choko.riv',
         attackAnimationPath: 'assets/animations/attack_choko.riv',
+        isUnlocked: false,
+        rarity: 3,
       ),
       Character(
         name: 'カニ',
@@ -132,8 +80,11 @@ class GameData {
         powerCost: 70,
         description: 'ハサミで敵を挟み撃ちする甲殻類の戦士。',
         imagePath: 'kani.png',
+        lockedImagePath: 'kuro_kani.png',
         walkAnimationPath: 'assets/animations/walk_kani.riv',
         attackAnimationPath: 'assets/animations/attack_kani.riv',
+        isUnlocked: false,
+        rarity: 3,
       ),
       Character(
         name: 'カティ',
@@ -142,8 +93,11 @@ class GameData {
         powerCost: 80,
         description: '鋭い爪を持つ俊敏な猫の戦士。',
         imagePath: 'kati.png',
+        lockedImagePath: 'kuro_kati.png',
         walkAnimationPath: 'assets/animations/walk_kati.riv',
         attackAnimationPath: 'assets/animations/attack_kati.riv',
+        isUnlocked: false,
+        rarity: 4,
       ),
       Character(
         name: 'サンド',
@@ -152,8 +106,11 @@ class GameData {
         powerCost: 55,
         description: '砂を操る大地の守護者。高い防御力を誇る。',
         imagePath: 'sand.png',
+        lockedImagePath: 'kuro_sand.png',
         walkAnimationPath: 'assets/animations/walk_sand.riv',
         attackAnimationPath: 'assets/animations/attack_sand.riv',
+        isUnlocked: false,
+        rarity: 4,
       ),
       Character(
         name: 'ショク',
@@ -162,8 +119,11 @@ class GameData {
         powerCost: 85,
         description: '植物の力を借りて戦う自然の戦士。',
         imagePath: 'shoku.png',
+        lockedImagePath: 'kuro_shoku.png',
         walkAnimationPath: 'assets/animations/walk_shoku.riv',
         attackAnimationPath: 'assets/animations/attack_shoku.riv',
+        isUnlocked: false,
+        rarity: 5,
       ),
     ];
   }

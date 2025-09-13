@@ -11,6 +11,7 @@ class Character {
   final bool isAreaAttack; // 範囲攻撃かどうか
   final double attackRange; // 攻撃範囲（範囲攻撃の場合のみ使用）
   final bool isUnlocked; // アンロックフラグ
+  final int rarity; // レアリティ（星の数）
   int currentHp;
 
   Character({
@@ -26,6 +27,7 @@ class Character {
     this.isAreaAttack = false, // デフォルトは単体攻撃
     this.attackRange = 50.0, // デフォルト攻撃範囲
     this.isUnlocked = true, // デフォルトはアンロック済み
+    this.rarity = 3, // デフォルトは星3
   }) : currentHp = maxHp;
 
   bool get isAlive => currentHp > 0;
@@ -53,6 +55,7 @@ class Character {
     bool? isAreaAttack,
     double? attackRange,
     bool? isUnlocked,
+    int? rarity,
     int? currentHp,
   }) {
     return Character(
@@ -68,6 +71,7 @@ class Character {
       isAreaAttack: isAreaAttack ?? this.isAreaAttack,
       attackRange: attackRange ?? this.attackRange,
       isUnlocked: isUnlocked ?? this.isUnlocked,
+      rarity: rarity ?? this.rarity,
     )..currentHp = currentHp ?? this.currentHp;
   }
 }
