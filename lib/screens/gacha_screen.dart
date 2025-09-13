@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import '../models/gacha_item.dart';
 import '../services/gacha_service.dart';
 import '../services/character_collection_service.dart';
+import '../services/character_level_service.dart';
+import '../widgets/character_level_widget.dart';
 
 class GachaScreen extends StatefulWidget {
   const GachaScreen({super.key});
@@ -15,13 +17,15 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   late AnimationController _cardAnimationController;
   late AnimationController _buttonAnimationController;
   late Animation<double> _cardAnimation;
-  late Animation<double> _buttonAnimation;
   
   UserProgress userProgress = UserProgress();
   GachaResult? currentResult;
   bool isAnimating = false;
   bool showRetryButton = false;
   Set<String> newlyObtainedCharacters = {};
+  bool showLevelUpEffect = false;
+  int levelUpNewLevel = 1;
+  String levelUpCharacterName = '';
   
   @override
   void initState() {
@@ -43,14 +47,6 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
     ).animate(CurvedAnimation(
       parent: _cardAnimationController,
       curve: Curves.easeInOut,
-    ));
-    
-    _buttonAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.8,
-    ).animate(CurvedAnimation(
-      parent: _buttonAnimationController,
-      curve: Curves.elasticIn,
     ));
   }
 
@@ -93,6 +89,9 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   void _processGachaResult(GachaResult result) async {
     // 新キャラ判定：ガチャを引く前に未取得だったキャラを特定
     final newCharactersInThisPull = <String>{};
+    bool leveledUp = false;
+    String levelUpCharacter = '';
+    int newLevel = 1;
     
     for (final item in result.items) {
       if (item.type == ItemType.character && item.character != null) {
@@ -104,13 +103,28 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
         }
         
         userProgress.unlockCharacter(item.id);
-        CharacterCollectionService.markCharacterAsObtained(characterName);
+        
+        // レベルアップ判定を含むキャラクター処理
+        if (!wasAlreadyObtained) {
+          await CharacterCollectionService.markCharacterAsObtained(characterName);
+        } else {
+          // 既存キャラの場合、レベルアップ判定
+          final didLevelUp = await CharacterLevelService.addCard(characterName);
+          if (didLevelUp) {
+            leveledUp = true;
+            levelUpCharacter = characterName;
+            newLevel = await CharacterLevelService.getCharacterLevel(characterName);
+          }
+        }
       }
     }
     
     setState(() {
       currentResult = result;
       newlyObtainedCharacters = newCharactersInThisPull;
+      showLevelUpEffect = leveledUp;
+      levelUpCharacterName = levelUpCharacter;
+      levelUpNewLevel = newLevel;
     });
   }
   
@@ -123,6 +137,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
     setState(() {
       currentResult = null;
       showRetryButton = false;
+      showLevelUpEffect = false;
       _cardAnimationController.reset();
     });
   }
@@ -178,6 +193,19 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                           currentResult == null 
                               ? _buildGachaStandby()
                               : _buildGachaResult(),
+                          
+                          // レベルアップエフェクト
+                          if (showLevelUpEffect)
+                            Center(
+                              child: LevelUpEffectWidget(
+                                newLevel: levelUpNewLevel,
+                                onAnimationComplete: () {
+                                  setState(() {
+                                    showLevelUpEffect = false;
+                                  });
+                                },
+                              ),
+                            ),
                           
                           // 右下の「もう一度」ボタン
                           if (currentResult != null && showRetryButton)
@@ -384,19 +412,34 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                   item.name,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    item.description,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                // キャラクターの場合はレベル情報を表示
+                if (item.character != null) ...[
+                  CharacterLevelWidget(
+                    characterName: item.character!.name,
+                    isCompact: true,
+                    width: 120,
+                    height: 24,
+                    animateProgress: true, // アニメーション有効
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      item.description,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
@@ -432,27 +475,6 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildButtonArea() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: ElevatedButton(
-        onPressed: _resetResults,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[600],
-          minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-        ),
-        child: const Text(
-          'もう一度',
-          style: TextStyle(fontSize: 18, color: Colors.white),
         ),
       ),
     );

@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:taro_pan/main.dart';
 import 'package:rive/rive.dart' as rive;
 import 'package:audioplayers/audioplayers.dart';
 import 'battle_screen.dart';
 import 'screens/gacha_screen.dart';
 import 'services/character_collection_service.dart';
-import 'models/gacha_item.dart';
-import 'data/gacha_data.dart';
 import 'data/game_data.dart';
+import 'widgets/character_level_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -269,7 +267,7 @@ class _CharaListState extends State<CharaList> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
-                                flex: 3,
+                                flex: 4, // 画像領域を少し大きく
                                 child: Center(
                                   child: Image.asset(
                                     'assets/images/${_getCharacterDisplayImage(character)}',
@@ -277,12 +275,12 @@ class _CharaListState extends State<CharaList> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 4), // スペース調整
                               Flexible(
                                 flex: 1,
                                 child: Container(
                                   width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // パディング調整
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
@@ -309,7 +307,7 @@ class _CharaListState extends State<CharaList> {
                                     child: Text(
                                       _isCharacterObtained(character.name) ? character.name : "???",
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 10, // フォントサイズ縮小
                                         fontWeight: FontWeight.w900,
                                         color: Colors.black87,
                                         shadows: [
@@ -337,6 +335,18 @@ class _CharaListState extends State<CharaList> {
                           right: 8,
                           child: _buildStarRating(character.rarity),
                         ),
+                        // 左下にレベル表示（解放済みキャラのみ）
+                        if (_isCharacterObtained(character.name))
+                          Positioned(
+                            bottom: 32, // 少し上に調整
+                            left: 4,
+                            child: CharacterLevelWidget(
+                              characterName: character.name,
+                              isCompact: true,
+                              width: 70, // 新しいウィジェットサイズに合わせて調整
+                              height: 26,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -616,6 +626,7 @@ class _CharaList2State extends State<CharaList2> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min, // 最小サイズに調整
                                     children: [
                                       Text(
                                         _isCharacterObtained(character.name) ? character.name : "???",
@@ -626,12 +637,26 @@ class _CharaList2State extends State<CharaList2> {
                                         ),
                                       ),
                                       const SizedBox(height: 20),
-                                      Text(
-                                        _isCharacterObtained(character.name) ? description : "???",
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                      // 解放済みキャラクターにレベル情報を表示
+                                      if (_isCharacterObtained(character.name)) ...[
+                                        CharacterLevelWidget(
+                                          characterName: character.name,
+                                          showProgressBar: true,
+                                          width: 200,
+                                          height: 70, // 高さを少し縮小
+                                        ),
+                                        const SizedBox(height: 15),
+                                      ],
+                                      Flexible(
+                                        child: Text(
+                                          _isCharacterObtained(character.name) ? description : "???",
+                                          style: const TextStyle(
+                                            fontSize: 18, // フォントサイズを少し縮小
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                          maxLines: 4, // 最大4行に制限
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],
