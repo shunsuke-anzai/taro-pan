@@ -193,14 +193,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   }
   
   Future<void> _addCharacterButtons() async {
-<<<<<<< HEAD
-    final allCharacters = GameData.getAllCharacters();
-    
-    // 既存キャラのみ（最初の5体）を戦闘で使用可能にする
-    final characters = allCharacters.take(5).toList();
-=======
     final characters = GameData.getAllCharacters().take(5).toList(); // 先頭5体のみ
->>>>>>> 9c0b538708072c06e444088a570fc11778fe0bb8
     
     // ボタンサイズをさらに1.2倍に設定
     final buttonWidth = 122.4;  // 102 * 1.2

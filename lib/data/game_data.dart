@@ -122,6 +122,8 @@ class GameData {
         powerCost: 50,
         description: '甘い香りで敵を魅了するチョコレート戦士。',
         imagePath: 'choko.png',
+        walkAnimationPath: 'assets/animations/walk_choko.riv',
+        attackAnimationPath: 'assets/animations/attack_choko.riv',
       ),
       Character(
         name: 'カニ',
@@ -130,6 +132,8 @@ class GameData {
         powerCost: 70,
         description: 'ハサミで敵を挟み撃ちする甲殻類の戦士。',
         imagePath: 'kani.png',
+        walkAnimationPath: 'assets/animations/walk_kani.riv',
+        attackAnimationPath: 'assets/animations/attack_kani.riv',
       ),
       Character(
         name: 'カティ',
@@ -138,6 +142,8 @@ class GameData {
         powerCost: 80,
         description: '鋭い爪を持つ俊敏な猫の戦士。',
         imagePath: 'kati.png',
+        walkAnimationPath: 'assets/animations/walk_kati.riv',
+        attackAnimationPath: 'assets/animations/attack_kati.riv',
       ),
       Character(
         name: 'サンド',
@@ -146,6 +152,8 @@ class GameData {
         powerCost: 55,
         description: '砂を操る大地の守護者。高い防御力を誇る。',
         imagePath: 'sand.png',
+        walkAnimationPath: 'assets/animations/walk_sand.riv',
+        attackAnimationPath: 'assets/animations/attack_sand.riv',
       ),
       Character(
         name: 'ショク',
@@ -154,6 +162,8 @@ class GameData {
         powerCost: 85,
         description: '植物の力を借りて戦う自然の戦士。',
         imagePath: 'shoku.png',
+        walkAnimationPath: 'assets/animations/walk_shoku.riv',
+        attackAnimationPath: 'assets/animations/attack_shoku.riv',
       ),
     ];
   }
