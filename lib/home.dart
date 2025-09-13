@@ -17,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late rive.RiveAnimationController _controller;
+  late rive.RiveAnimationController _repeatController;
+  bool _showRepeat = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
@@ -31,9 +33,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     
     WidgetsBinding.instance.addObserver(this);
     _controller = rive.SimpleAnimation('Timeline 1');
-    _playBGM();
+    _repeatController = rive.SimpleAnimation('Timeline 1');
+    _controller.isActiveChanged.addListener(_onIntroActiveChanged);
   }
   
+  void _onIntroActiveChanged() {
+    if (!_controller.isActive) {
+      setState(() {
+        _showRepeat = true;
+      });
+    }
+  }
+
   Future<void> _playBGM() async {
     try {
       await _audioPlayer.play(AssetSource('BGM/クリームパンに見えるなぁ.mp3'));
@@ -45,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _controller.isActiveChanged.removeListener(_onIntroActiveChanged);
     WidgetsBinding.instance.removeObserver(this);
     _audioPlayer.dispose();
     super.dispose();
@@ -82,11 +94,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: SizedBox(
               width: 1000,
               height: 500,
-              child: rive.RiveAnimation.asset(
-                'assets/animations/taro-pan.riv',
-                controllers: [_controller],
-                fit: BoxFit.contain,
-              ),
+              child: _showRepeat
+                  ? rive.RiveAnimation.asset(
+                      'assets/animations/taro-pan_repeat.riv',
+                      controllers: [_repeatController],
+                      fit: BoxFit.contain,
+                    )
+                  : rive.RiveAnimation.asset(
+                      'assets/animations/taro-pan.riv',
+                      controllers: [_controller],
+                      fit: BoxFit.contain,
+                    ),
             ),
           ),
           // タイトル画像
@@ -114,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     height: 40,
                     child: ElevatedButton(
                       onPressed: () {
+                        _playBGM();
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const BattleScreen()),
@@ -136,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     height: 40,
                     child: ElevatedButton(
                       onPressed: () {
+                        _playBGM();
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const GachaScreen()),
@@ -158,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     height: 40,
                     child: ElevatedButton(
                       onPressed: () {
+                        _playBGM();
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const CharaList()),
@@ -679,7 +700,6 @@ class _CharaList2State extends State<CharaList2> {
               );
             },
           ),
-          // ...existing code...
           Positioned(
             left: 40,
             top: 0,
@@ -701,8 +721,8 @@ class _CharaList2State extends State<CharaList2> {
               onPressed: _nextPage,
             ),
           ),
-          // ...existing code...
-                    Positioned(
+          // 左上に戻るボタン
+          Positioned(
             left: 16,
             top: 32,
             child: IconButton(
