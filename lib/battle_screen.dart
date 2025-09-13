@@ -8,12 +8,28 @@ class BattleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GameWidget<PanBattleGame>.controlled(
-        gameFactory: () => PanBattleGame(
-          onGameEnd: () {
-            Navigator.pop(context);
-          },
-        ),
+      body: Stack(
+        children: [
+          // ゲーム本体
+          GameWidget<PanBattleGame>.controlled(
+            gameFactory: () => PanBattleGame(
+              onGameEnd: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
+          // 左上に戻るボタン
+          Positioned(
+            left: 16,
+            top: 32,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, size: 32, color: Colors.black),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

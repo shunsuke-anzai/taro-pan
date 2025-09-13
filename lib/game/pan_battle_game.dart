@@ -117,10 +117,10 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   }
   
   Future<void> _addUI() async {
-    // イーストパワーの現在値（分子）を大きく表示
+    // イーストパワーの現在値（分子）を左上の戻るボタンの右横に配置
     yeastPowerText = TextComponent(
       text: '$yeastPower',
-      position: Vector2(20, gameHeight - 100),
+      position: Vector2(80, 20),
       textRenderer: TextPaint(
         style: TextStyle(
           color: Colors.yellow,
@@ -153,10 +153,10 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
     );
     add(yeastPowerText);
     
-    // イーストパワーの最大値（分母）を小さく表示
+    // イーストパワーの最大値（分母）を小さく表示（戻るボタンの右横）
     final maxYeastText = TextComponent(
       text: '/ $maxYeastPower',
-      position: Vector2(100, gameHeight - 40),
+      position: Vector2(180, 55),
       textRenderer: TextPaint(
         style: TextStyle(
           color: Colors.yellow,
@@ -331,6 +331,7 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
         maxHp: character.maxHp,
         attackPower: character.attackPower,
         powerCost: character.powerCost,
+        level: character.level,
         description: character.description,
         imagePath: character.imagePath,
         walkAnimationPath: character.walkAnimationPath,
@@ -666,7 +667,7 @@ class DeployedCharacterComponent extends PositionComponent {
           
           bool anyEnemyDied = false;
           for (final enemy in allEnemies) {
-            enemy.enemy.takeDamage(character.attackPower);
+            enemy.enemy.takeDamage(character.actualAttackPower);
             if (!enemy.enemy.isAlive) {
               enemy.die();
               anyEnemyDied = true;
@@ -681,7 +682,7 @@ class DeployedCharacterComponent extends PositionComponent {
         } else {
           // 単体攻撃の場合：従来通り
           for (final enemy in enemies) {
-            enemy.enemy.takeDamage(character.attackPower);
+            enemy.enemy.takeDamage(character.actualAttackPower);
             
             if (!enemy.enemy.isAlive) {
               enemy.die();
@@ -713,7 +714,7 @@ class DeployedCharacterComponent extends PositionComponent {
           lastAttackTime = currentTime;
           _startAttackAnimation();
           (parent as PanBattleGame)._playAttackSound();
-          game.enemyCastleHp -= character.attackPower;
+          game.enemyCastleHp -= character.actualAttackPower;
           if (game.enemyCastleHp < 0) game.enemyCastleHp = 0;
           game._updateCastleHpDisplay();
         }
