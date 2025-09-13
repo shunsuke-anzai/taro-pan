@@ -11,6 +11,7 @@ import '../models/character.dart';
 import '../models/enemy.dart';
 import '../data/game_data.dart';
 import '../data/enemy_data.dart';
+import '../services/se_service.dart';
 
 class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   late double gameWidth;
@@ -318,6 +319,9 @@ class PanBattleGame extends FlameGame with TapDetector, HasGameReference {
   
   void _deployCharacter(Character character) {
     if (yeastPower >= character.powerCost) {
+      // ボタンSE再生
+      SEService.playButtonSE();
+      
       yeastPower -= character.powerCost;
       _updateYeastPowerDisplay();
       

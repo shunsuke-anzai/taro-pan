@@ -16,10 +16,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen> {
   late rive.RiveAnimationController _controller;
-  late rive.RiveAnimationController _repeatController;
-  bool _showRepeat = false;
+  bool _bgmStarted = false;
 
   @override
   void initState() {
@@ -31,47 +30,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       DeviceOrientation.landscapeRight,
     ]);
     
-    WidgetsBinding.instance.addObserver(this);
     _controller = rive.SimpleAnimation('Timeline 1');
-    _repeatController = rive.SimpleAnimation('Loop', autoplay: true);
     _controller.isActiveChanged.addListener(_onIntroActiveChanged);
     
-    // アプリ起動時にBGMを開始
-    _playBGM();
+    // BGMは最初のユーザーインタラクション時に開始
   }
   
   void _onIntroActiveChanged() {
     if (!_controller.isActive) {
-      setState(() {
-        _showRepeat = true;
-        _repeatController.isActive = true;
-      });
+      // イントロアニメーション終了時の処理（BGM開始は削除）
     }
   }
 
   Future<void> _playBGM() async {
-    print('ホーム画面でBGM再生を開始します');
-    await BGMService().playBGM('BGM/bgm.mp3');
+    if (!_bgmStarted) {
+      print('ホーム画面でBGM再生を開始します');
+      await BGMService().playBGM();
+      _bgmStarted = true;
+    }
   }
 
   @override
   void dispose() {
     _controller.isActiveChanged.removeListener(_onIntroActiveChanged);
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // アプリがフォアグラウンドに戻った時にアニメーション再生
-    if (state == AppLifecycleState.resumed) {
-      setState(() {
-        _controller = rive.SimpleAnimation('Timeline 1');
-      });
-      BGMService().resumeBGM();
-    } else if (state == AppLifecycleState.paused) {
-      BGMService().pauseBGM();
-    }
   }
 
   @override
@@ -93,17 +75,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: SizedBox(
               width: 1000,
               height: 500,
-              child: _showRepeat
-                  ? rive.RiveAnimation.asset(
-                      'assets/animations/taro-pan_repeat.riv',
-                      controllers: [_repeatController],
-                      fit: BoxFit.contain,
-                    )
-                  : rive.RiveAnimation.asset(
-                      'assets/animations/taro-pan.riv',
-                      controllers: [_controller],
-                      fit: BoxFit.contain,
-                    ),
+              child: rive.RiveAnimation.asset(
+                'assets/animations/taro-pan.riv',
+                controllers: [_controller],
+                fit: BoxFit.contain,
+              ),
             ),
           ),
           // タイトル画像
@@ -132,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     child: ElevatedButton(
                       onPressed: () {
                         SEService.playButtonSE();
-                        BGMService().stopBGM();
+                        _playBGM(); // BGM開始
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const BattleScreen()),
@@ -156,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     child: ElevatedButton(
                       onPressed: () {
                         SEService.playButtonSE();
-                        _playBGM();
+                        _playBGM(); // BGM開始
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const GachaScreen()),
@@ -180,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     child: ElevatedButton(
                       onPressed: () {
                         SEService.playButtonSE();
-                        _playBGM();
+                        _playBGM(); // BGM開始
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const CharaList()),

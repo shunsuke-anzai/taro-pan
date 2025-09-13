@@ -4,6 +4,7 @@ import '../models/gacha_item.dart';
 import '../services/gacha_service.dart';
 import '../services/character_collection_service.dart';
 import '../services/character_level_service.dart';
+import '../services/se_service.dart';
 import '../widgets/character_level_widget.dart';
 
 class GachaScreen extends StatefulWidget {
@@ -78,8 +79,13 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
       return;
     }
 
+    // ガチャ開始時のSE再生
+    SEService.playGachaBefore();
+    
     HapticFeedback.mediumImpact();
-    setState(() => isAnimating = true);
+    if (mounted) {
+      setState(() => isAnimating = true);
+    }
     
     // キラキラアニメーションを開始（ガチャを引いている間）
     _sparkleAnimationController.repeat(reverse: true);
@@ -101,15 +107,22 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
     _cardAnimationController.forward();
     
     await Future.delayed(const Duration(milliseconds: 1200));
-    setState(() => isAnimating = false);
+    if (mounted) {
+      setState(() => isAnimating = false);
+    }
     
     // キャラ表示から2秒後に「もう一度」ボタンを表示
     await Future.delayed(const Duration(seconds: 2));
-    setState(() => showRetryButton = true);
+    if (mounted) {
+      setState(() => showRetryButton = true);
+    }
   }
 
 
   void _processGachaResult(GachaResult result) async {
+    // ガチャ結果SE再生
+    SEService.playGachaAfter();
+    
     // 新キャラ判定：ガチャを引く前に未取得だったキャラを特定
     final newCharactersInThisPull = <String>{};
     bool leveledUp = false;
@@ -142,13 +155,15 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
       }
     }
     
-    setState(() {
-      currentResult = result;
-      newlyObtainedCharacters = newCharactersInThisPull;
-      showLevelUpEffect = leveledUp;
-      levelUpCharacterName = levelUpCharacter;
-      levelUpNewLevel = newLevel;
-    });
+    if (mounted) {
+      setState(() {
+        currentResult = result;
+        newlyObtainedCharacters = newCharactersInThisPull;
+        showLevelUpEffect = leveledUp;
+        levelUpCharacterName = levelUpCharacter;
+        levelUpNewLevel = newLevel;
+      });
+    }
   }
   
   bool _isNewCharacter(String characterName) {
@@ -157,13 +172,15 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
   }
 
   void _resetResults() {
-    setState(() {
-      currentResult = null;
-      showRetryButton = false;
-      showLevelUpEffect = false;
-      _cardAnimationController.reset();
-      _sparkleAnimationController.reset();
-    });
+    if (mounted) {
+      setState(() {
+        currentResult = null;
+        showRetryButton = false;
+        showLevelUpEffect = false;
+        _cardAnimationController.reset();
+        _sparkleAnimationController.reset();
+      });
+    }
   }
 
   void _showProbabilityDialog() {
@@ -305,9 +322,11 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                               child: LevelUpEffectWidget(
                                 newLevel: levelUpNewLevel,
                                 onAnimationComplete: () {
-                                  setState(() {
-                                    showLevelUpEffect = false;
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      showLevelUpEffect = false;
+                                    });
+                                  }
                                 },
                               ),
                             ),
@@ -403,7 +422,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 50),
+            const SizedBox(height: 20), // 50から20に減少
             Container(
               width: 200,
               height: 200,
@@ -430,17 +449,17 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                 },
               ),
             ),
-            const SizedBox(height: 32),
-            Text(
-              isAnimating ? 'ガチャを引いています...' : '運命のパンを引き当てよう！',
-              style: const TextStyle(
+            const SizedBox(height: 16), // 32から16に減少
+            const Text(
+              '運命のパンを引き当てよう！',
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12), // 20から12に減少
             if (isAnimating)
               const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -454,7 +473,7 @@ class _GachaScreenState extends State<GachaScreen> with TickerProviderStateMixin
                 ),
                 textAlign: TextAlign.center,
               ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 30), // 50から30に減少
           ],
         ),
       ),

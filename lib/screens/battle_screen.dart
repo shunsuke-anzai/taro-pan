@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/game.dart';
 import '../game/pan_battle_game.dart';
-import '../services/bgm_service.dart';
 
 class BattleScreen extends StatefulWidget {
   const BattleScreen({super.key});
@@ -26,22 +25,16 @@ class _BattleScreenState extends State<BattleScreen> {
     
     game = PanBattleGame(
       onGameEnd: () {
-        // ゲーム終了時にホーム画面のBGMに戻してホーム画面に戻る
-        BGMService().playBGM('BGM/bgm.mp3');
+        // ゲーム終了時にホーム画面に戻る（BGMは継続）
         Navigator.of(context).pop();
       },
     );
-    _playBattleBGM();
-  }
-
-  Future<void> _playBattleBGM() async {
-    print('戦闘画面でBGM再生を開始します');
-    await BGMService().playBGM('BGM/battle.mp3');
+    // 戦闘画面でも同じBGMを継続（特別な処理不要）
   }
 
   @override
   void dispose() {
-    // BGMサービスは戦闘画面を出るときにホーム画面のBGMに戻す
+    // BGMサービスは戦闘画面を出るときも継続
     super.dispose();
   }
 
@@ -54,8 +47,7 @@ class _BattleScreenState extends State<BattleScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // ホーム画面のBGMに戻す
-            BGMService().playBGM('BGM/bgm.mp3');
+            // BGMは継続のまま戻る
             Navigator.pop(context);
           },
         ),
